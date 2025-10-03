@@ -5,11 +5,27 @@ import { uploadVideo, uploadImage, deleteMediaById } from "../helper/upload-medi
 // [GET] /course - Hiển thị danh sách khóa học
 export const coursePage = async (req, res) => {
     try {
-        const courses = await Course.find(); // Lấy tất cả khóa học
+        // Pagination
+        const page = parseInt(req.query.page) || 1;
+        const limit = 12; // Số khóa học mỗi trang
+        const skip = (page - 1) * limit;
+
+        // Đếm tổng số khóa học
+        const totalCourses = await Course.countDocuments();
+        const totalPages = Math.ceil(totalCourses / limit);
+
+        const courses = await Course.find()
+            .skip(skip)
+            .limit(limit);
+
         console.log("📢 Courses from DB:", courses);
         res.render('./page/course/index', {
             title: 'Khóa học',
-            courses: courses
+            courses: courses,
+            currentPage: page,
+            totalPages: totalPages,
+            hasNextPage: page < totalPages,
+            hasPrevPage: page > 1,
         });
     } catch (error) {
         console.error(error);

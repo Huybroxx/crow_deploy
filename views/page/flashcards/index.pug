@@ -14,27 +14,103 @@ block main
                 h1 Flashcards
                 p.description Trong suốt thời gian qua, chúng tôi đã nỗ lực định hình cách mọi người tiếp cận đại học, giúp họ không chỉ học hỏi mà còn trưởng thành qua từng trải nghiệm.
 
-        section.flashcard-categories
-            .card.course-card#add-card-set
-                .content.text-center
-                    i.fas.fa-plus-circle
-                    h2 Tạo thẻ mới
-                    a(href="/flashcards/createCard") Tạo thẻ mới
+        // PHẦN 1: Flashcards của tôi
+        .my-flashcards-section
+            .section-header-with-toggle(style="display: flex; align-items: center; margin-bottom: 20px; gap: 15px;")
+                h2.section-title(style="margin: 0; display: flex; align-items: center;")
+                    i.fas.fa-user-circle(style="margin-right: 10px; color: var(--primary-color);")
+                    | Thẻ của tôi
+                button#toggleMyCards.toggle-btn(style="padding: 8px 16px; background: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s;")
+                    i.fas.fa-chevron-up
+                    span(style="margin-left: 8px;") Thu gọn
 
-            if (flashCardSets && flashCardSets.length > 0)
-                each flashcard in flashCardSets
-                    .card.course-card
-                        .content
-                            img(src="./img/course-1.png" alt="hình ảnh thẻ ghi nhớ")
-                            h2 #{flashcard.name}
-                            p #{flashcard.cards ? flashcard.cards.length : 0} thẻ
-                            p Tạo lúc: #{new Date(flashcard.createdAt).toLocaleDateString("vi-VN")}
-                            .control
-                                a(href=`/flashcards/card/${flashcard._id}`) Xem
-                                a(href=`/flashcards/list/${flashcard._id}`) List
-                                form(action=`/flashcards/delete/${flashcard._id}?_method=DELETE` method="POST")
-                                    button(type="submit" class="delete-card") Xóa
-            else
-                h3 Chưa có thẻ ghi nhớ nào
+            section.flashcard-categories#my-cards-container
+                .card.course-card#add-card-set
+                    .content.text-center
+                        i.fas.fa-plus-circle
+                        h2 Tạo thẻ mới
+                        a(href="/flashcards/createCard") Tạo thẻ mới
+
+                if (myFlashCardSets && myFlashCardSets.length > 0)
+                    each flashcard in myFlashCardSets
+                        .card.course-card
+                            .content
+                                img(src="./img/course-1.png" alt="hình ảnh thẻ ghi nhớ")
+                                h2 #{flashcard.name}
+                                p #{flashcard.cards ? flashcard.cards.length : 0} thẻ
+                                p Tạo lúc: #{new Date(flashcard.createdAt).toLocaleDateString("vi-VN")}
+                                .control
+                                    a(href=`/flashcards/card/${flashcard._id}`) Xem
+                                    a(href=`/flashcards/list/${flashcard._id}`) List
+                                    form(action=`/flashcards/delete/${flashcard._id}?_method=DELETE` method="POST" style="display: inline;")
+                                        button(type="submit" class="delete-card") Xóa
+                else
+                    .empty-state(style="grid-column: 1/-1; text-align: center; padding: 40px;")
+                        i.fas.fa-inbox(style="font-size: 3em; color: #ddd; margin-bottom: 15px;")
+                        h3(style="color: #999;") Chưa có thẻ ghi nhớ nào
+
+            // Pagination for my cards
+            if myTotalPages > 1
+                .pagination-container.my-pagination-container(style="display: flex; justify-content: center; align-items: center; margin: 30px 0; gap: 10px;")
+                    if myCurrentPage > 1
+                        a.pagination-btn.my-prev-btn(href="#" style="padding: 10px 20px; background: #1877f2; color: white; border-radius: 5px; text-decoration: none; font-weight: bold;") ← Trước
+                    else
+                        span.pagination-btn.disabled(style="padding: 10px 20px; background: #ccc; color: #666; border-radius: 5px; cursor: not-allowed;") ← Trước
+
+                    span.pagination-info Trang #{myCurrentPage} / #{myTotalPages}
+
+                    if myHasMore
+                        a.pagination-btn.my-next-btn(href="#" style="padding: 10px 20px; background: #1877f2; color: white; border-radius: 5px; text-decoration: none; font-weight: bold;") Tiếp →
+                    else
+                        span.pagination-btn.disabled(style="padding: 10px 20px; background: #ccc; color: #666; border-radius: 5px; cursor: not-allowed;") Tiếp →
+
+        // PHẦN 2: Flashcards của người khác
+        .others-flashcards-section(style="margin-top: 60px;")
+            .section-header(style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;")
+                .title-with-toggle(style="display: flex; align-items: center; gap: 15px;")
+                    h2.section-title(style="margin: 0;")
+                        i.fas.fa-users(style="margin-right: 10px; color: var(--primary-color);")
+                        | Thẻ của cộng đồng
+                    button#toggleOthersCards.toggle-btn(style="padding: 8px 16px; background: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s;")
+                        i.fas.fa-chevron-up
+                        span(style="margin-left: 8px;") Thu gọn
+
+                // Search bar
+                .search-container
+                    input#searchInput.search-input(type="text" placeholder="Tìm kiếm thẻ..." value=searchQuery style="padding: 10px 15px; border: 2px solid #ddd; border-radius: 25px; width: 300px; outline: none; transition: all 0.3s;")
+                    i.fas.fa-search(style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #999;")
+
+            section.flashcard-categories#others-cards-container
+                if (othersFlashCardSets && othersFlashCardSets.length > 0)
+                    each flashcard in othersFlashCardSets
+                        .card.course-card
+                            .content
+                                img(src="./img/course-1.png" alt="hình ảnh thẻ ghi nhớ")
+                                h2 #{flashcard.name}
+                                p #{flashcard.cards ? flashcard.cards.length : 0} thẻ
+                                if flashcard.user
+                                    p(style="font-size: 0.85em; color: #888;")
+                                        i.fas.fa-user(style="margin-right: 5px;")
+                                        | #{flashcard.user.username}
+                                p Tạo lúc: #{new Date(flashcard.createdAt).toLocaleDateString("vi-VN")}
+                                .control
+                                    a(href=`/flashcards/card/${flashcard._id}`) Xem
+                                    a(href=`/flashcards/list/${flashcard._id}`) List
+                else
+                    .empty-state(style="grid-column: 1/-1; text-align: center; padding: 40px;")
+                        i.fas.fa-search(style="font-size: 3em; color: #ddd; margin-bottom: 15px;")
+                        h3(style="color: #999;") Không tìm thấy kết quả nào
+
+            // Pagination sẽ được tạo bởi JavaScript CSR
+
 block script2
+    script.
+        // Pass server data to JavaScript
+        window.flashcardPageData = {
+            myCurrentPage: #{myCurrentPage},
+            myTotalPages: #{myTotalPages},
+            othersCurrentPage: #{othersCurrentPage},
+            othersTotalPages: #{othersTotalPages}
+        };
     script(src="./js/flashcard/x.js" type="module")
+    script(src="./js/flashcard/flashcards-csr.js")

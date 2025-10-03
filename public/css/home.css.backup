@@ -1,0 +1,596 @@
+.section-all {
+    background: #FFF;
+    width: 100%;
+
+}
+
+.section-one {
+    background: #FFF;
+    padding: 100px 0;
+    width: 1440px;
+    height: 730px;
+    margin: 0 auto;
+
+}
+
+.section-one .inner-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.section-one .inner-content .inner-list {
+    display: flex;
+}
+
+.section-one .inner-content .inner-list div {
+    margin-right: 20px;
+    width: 100px;
+    height: 28px;
+    border-radius: 16px;
+    background: #FB6238;
+}
+
+.section-one .inner-content .inner-list div p {
+    color: #FFF;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 28px;
+    text-align: center;
+}
+
+.section-one .inner-content .inner-list p {
+    color: #000;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 28px;
+    margin-bottom: 20px;
+}
+
+.section-one .inner-content .inner-title {
+    width: 489px;
+    height: 266px;
+}
+
+.section-one .inner-content .inner-title p.td1 {
+    color: #2D2525;
+    font-size: 70px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.section-one .inner-content .inner-title span.highlight {
+    background: linear-gradient(269deg, #A6CF4A 16.43%, #FFD05A 37.58%, #FD60A9 54.54%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: Inter;
+    font-size: 70px;
+    font-style: normal;
+    font-weight: 800;
+    line-height: normal;
+}
+
+.section-one .inner-content .inner-title p.td2 {
+    color: #2B2424;
+    font-family: Inter;
+    font-size: 70px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+
+.section-one .inner-content .inner-desc p {
+    color: #717171;
+
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 24px;
+    /* 150% */
+}
+
+.section-one .inner-content .inner-list-2 {
+    display: flex;
+    margin-top: 40px;
+    margin-bottom: 40px;
+
+    align-items: center;
+
+}
+
+.section-one .inner-content .btn {
+    margin-right: 20px;
+
+    width: 212px;
+    height: 52px;
+    flex-shrink: 0;
+    border-radius: 30px;
+    background: #F17202;
+    color: #FFF;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+}
+
+.section-one .inner-image {
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 849px;
+    height: 675px;
+}
+
+.section-one .inner-image .number-lesson {
+
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 215.919px;
+    height: 58px;
+    flex-shrink: 0;
+    border-radius: 29px;
+    background: #FFF;
+    box-shadow: 0px 8px 40px 0px rgba(0, 0, 0, 0.04);
+}
+
+.section-one .inner-image .number-lesson img {
+    margin-right: 20px;
+}
+
+.section-one .inner-image .number-lesson p {
+    color: #676B7C;
+
+    font-size: 18.118px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+
+/* section-two */
+.section-two {
+
+    width: 100%;
+    height: 810px;
+    background: #FFF;
+    padding: 50px 0;
+}
+
+.section-two .title {
+    padding: 50px 0;
+    color: #010101;
+
+    font-size: 40px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    font-weight: bold;
+    text-align: center;
+}
+
+.section-two .course-container {
+    width: 1074px;
+    height: 354.944px;
+    margin: 0 auto;
+}
+
+.section-two .course-container .inner-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+}
+
+.section-two .course-container .inner-wrap .course-card {
+    display: flex;
+    flex-direction: column;
+    /* Xįŗæp cĆ c phįŗ§n tį»­ theo chiį»u dį»¨c */
+    justify-content: center;
+    /* CÄn giį»Æa theo chiį»u dį»¨c */
+    align-items: center;
+    /* CÄn giį»Æa theo chiį»u ngang */
+    /* CÄn chį»Æ vĆ o giį»Æa */
+    width: 252px;
+    height: 354.944px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    border: 0.5px solid #F2F2F2;
+
+    background: #FFF;
+
+    box-shadow: 0px 10px 30px 0px rgba(0, 0, 0, 0.04);
+}
+
+.section-two .course-container .inner-wrap .course-card img {
+
+    width: 90%;
+    height: 202px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    margin-bottom: 26px;
+}
+
+.section-two .course-container .inner-wrap .course-card h3 {
+    width: 211px;
+    height: 57.207px;
+    flex-shrink: 0;
+    color: #292C3F;
+
+
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 22px;
+    /* 137.5% */
+}
+
+.section-two .course-container .inner-wrap .course-card p {
+    width: 115px;
+    height: 23.403px;
+    flex-shrink: 0;
+    color: #717171;
+
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+
+}
+
+.section-two .course-container .inner-wrap .course-card .hpp {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+}
+
+/* end  section-two */
+
+/*   section-three */
+
+.section-three {
+    width: 100%;
+    height: 670px;
+    background: #FFF;
+    padding: 50px 0;
+}
+
+.section-three .background-tool {
+    width: 100%;
+    height: 511px;
+    background: #F5F5F5;
+    position: relative;
+}
+
+.section-three .background-tool .icon-rain {
+    width: 149px;
+    height: 179px;
+    flex-shrink: 0;
+    position: absolute;
+    top: 73px;
+    left: 39px;
+}
+
+.section-three .background-tool .container {
+    margin-top: 70px;
+}
+
+
+.section-three .background-tool .title {
+    padding: 50px 0;
+    color: #010101;
+
+    font-size: 40px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    font-weight: bold;
+    text-align: center;
+}
+
+
+
+.section-three .background-tool .container .inner-wrap {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    max-width: 800px;
+    margin: auto;
+}
+
+.section-three .background-tool .container .inner-wrap .grid-item {
+
+    display: flex;
+    gap: 20px;
+    width: 275px;
+    height: 72px;
+    flex-shrink: 0;
+    flex-shrink: 0;
+    border-radius: 4px;
+    background: #FFF;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section-three .background-tool .container .inner-wrap .grid-item img {
+    width: 35px;
+    height: 35px;
+    flex-shrink: 0;
+}
+
+.section-three .background-tool .container .inner-wrap .grid-item p {
+    color: #1B3152;
+
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 30px;
+    /* 150% */
+}
+
+/* end section-three */
+/* section four */
+.section-four {
+    width: 100%;
+    height: 810px;
+    background: #FFF;
+    padding: 50px 0;
+}
+
+.section-four .title {
+    padding: 50px 0;
+    color: #010101;
+
+    font-size: 40px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    font-weight: bold;
+    text-align: center;
+}
+
+.section-four .container .inner-wrap {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    max-width: 1200px;
+    margin: auto;
+}
+
+.section-four .container .inner-wrap .inner-block-item {
+    width: 276px;
+    height: 230px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    border: 1px solid #FFF;
+    background: #FBF0F0;
+    padding: 14px;
+}
+
+.section-four .container .inner-wrap .inner-block-item .inner-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    box-shadow: 0px 8px 24px 0px rgba(166, 207, 74, 0.24);
+}
+
+.section-four .container .inner-wrap .inner-block-item .inner-title {
+    color: #010101;
+
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    margin: 20px 0;
+}
+
+.section-four .container .inner-wrap .inner-block-item .inner-desc {
+    color: #717171;
+
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 24px;
+    /* 171.429% */
+}
+
+/* end section four */
+/* section five */
+.section-five {
+    width: 100%;
+    height: 810px;
+    flex-shrink: 0;
+    background: linear-gradient(180deg, #D4F3F4 17.5%, #F3E4EA 38.5%, rgba(255, 184, 213, 0.39) 60.5%);
+    padding: 50px 0;
+
+}
+
+.section-five .container .inner-wrap {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    max-width: 1200px;
+    margin: auto;
+}
+
+.section-five .title {
+    padding: 50px 0;
+    color: #010101;
+
+    font-size: 40px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.section-five .container .inner-wrap .inner-block-item {
+    display: flex;
+    width: 552px;
+    height: 144px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    background: #FFF;
+    box-shadow: 12px 16px 40px -16px rgba(0, 0, 0, 0.12);
+    padding: 9px 22px;
+}
+
+.section-five .container .inner-wrap .inner-block-item img {
+    width: 193px;
+    height: 129px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    background: url(<path-to-image>) lightgray 50% / cover no-repeat;
+    margin-right: 23px;
+}
+
+.section-five .container .inner-wrap .inner-block-item .inner-desc {
+    color: #717171;
+
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 30px;
+    /* 150% */
+}
+
+.section-five .container .inner-wrap .inner-block-item .inner-title {
+    width: 324px;
+    color: #010101;
+    font-family: Inter;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 30px;
+    white-space: nowrap;
+    /* KhĆ´ng xuį»‘ng dĆ²ng */
+    overflow: hidden;
+    /* įŗØn nį»™i dung vĘ°į»£t quĆ  */
+    text-overflow: ellipsis;
+    /* Hiį»n thį»‹ "..." nįŗæu chį»Æ quĆ  dĆ i */
+    /* 150% */
+}
+
+/* end section five */
+
+/*  section six */
+.section-six {
+    margin: 100px 0;
+    width: 1440px;
+    height: 810px;
+    background: #FFF;
+}
+
+.section-six .title {
+    padding: 50px 0;
+    color: #010101;
+
+    font-size: 40px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.section-six .container-pagesix {
+    width: 1074px;
+    height: 354.944px;
+    margin: 0 auto;
+}
+
+.section-six .container-pagesix .inner-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+}
+
+.section-six .container-pagesix .inner-wrap .inner-image {
+
+    width: 400px;
+    height: 480px;
+    flex-shrink: 0;
+    border-radius: 20px;
+    background: #FFD05A;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.section-six .container-pagesix .inner-wrap .inner-image img {
+    width: 334px;
+    height: 434px;
+    flex-shrink: 0;
+    background: url(<path-to-image>) lightgray 50% / cover no-repeat;
+    border-radius: 20px;
+
+}
+
+.section-six .container-pagesix .inner-wrap .inner-content img {
+    width: 34.762px;
+    height: 26px;
+    flex-shrink: 0;
+}
+
+.section-six .container-pagesix .inner-wrap .inner-content .icon img {
+    width: 29px;
+    height: 29px;
+    flex-shrink: 0;
+    margin: 20px 0;
+}
+
+.section-six .container-pagesix .inner-wrap .inner-content .content {
+    width: 506px;
+    height: 180px;
+    flex-shrink: 0;
+    color: #14131A;
+
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 36px;
+    /* 150% */
+}
+
+.section-six .container-pagesix .inner-wrap .inner-content .content h3 {
+    color: #010101;
+
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 24px;
+    /* 120% */
+}
+
+.section-six .container-pagesix .inner-wrap .inner-content .content p {
+    color: #717171;
+
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 24px;
+    /* 150% */
+}

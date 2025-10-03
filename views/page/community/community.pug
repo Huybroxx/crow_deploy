@@ -3,109 +3,123 @@ include ../../mixin/alert.pug
 
 
 block style
-    link(rel="stylesheet" href="./css/community.css")
+  link(rel="stylesheet" href="./css/community.css")
 
 
 block main
-    +alert-success(5000)
-    +alert-error(5000)
-    .container(style="margin-top: 80px;")
-        
-        // Đăng bài viết
-        .block-create-post
-            .user-avatar
-                if user && user.avatar
-                    img(src=user.avatar, alt="User Avatar")
-                else
-                    img(src="/img/Avata.png", alt="User Avatar")
-                input.post-input(placeholder="Bạn đang nghĩ gì thế?" readonly id="postInput")
-            .post-options
-                .option
-                    img(src="/img/Live.png" alt="Video trực tiếp")
-                    span Video trực tiếp
-                .option
-                    img(src="./img/TepAnh.png" alt="Ảnh/video")
-                    span Ảnh/video
-                .option
-                    img(src="/img/Mặtcuoi.png" alt="Cảm xúc/hoạt động")
-                    span Cảm xúc/hoạt động
-        
-        #postPopup.post-popup(style="display: none;")
-            .popup-content
-                h2 Tạo bài viết
-                form#postForm(action="/community/create-post" method="POST" enctype="multipart/form-data")
-                    .form-group
-                        label(for="caption") Tiêu đề
-                        input#caption(type="text" name="caption" placeholder="Tiêu đề bài viết" required)
-                    .form-group
-                        label(for="desc") Nội dung
-                        textarea#desc(name="desc" placeholder="Bạn đang nghĩ gì?" rows="4" required)
-                    .form-group
-                        label(for="img") Hinh ảnh
-                        input#img(type="file" name="img" accept="image/*")
-                    .form-actions
-                        button.cancel-btn(type="button") Hủy
-                        button(type="submit") Đăng bài
+  +alert-success(5000)
+  +alert-error(5000)
+  .container(style="margin-top: 80px;")
 
-        // Duyệt bài viết
-        each post in posts
-            .post(data-post-id=post._id)
-                .post-header
-                    - var postDate = post.createdAt ? new Date(post.createdAt).toLocaleDateString("vi-VN") : "Ngày không hợp lệ";
-                    span.date= postDate
-                    span.separator •
-                    span.read-time 30 phút
-                    a.category(href="") Học Tập
+    // Đăng bài viết
+    .block-create-post
+      .user-avatar
+        if user && user.avatar
+          img(src=user.avatar, alt="User Avatar")
+        else
+          img(src="/img/Avata.png" alt="User Avatar")
+        input.post-input(placeholder="Bạn đang nghĩ gì thế?" readonly id="postInput")
+      .post-options
+        .option
+          img(src="/img/Live.png" alt="Video trực tiếp")
+          span Video trực tiếp
+        .option
+          img(src="./img/TepAnh.png" alt="Ảnh/video")
+          span Ảnh/video
+        .option
+          img(src="/img/Mặtcuoi.png" alt="Cảm xúc/hoạt động")
+          span Cảm xúc/hoạt động
 
-                .post-content
-                    .left
-                        h2= post.caption
-                        p= post.desc
-                        if post.img
-                            .post-image
-                                img(src=post.img, alt="Hình ảnh bài viết")
+    #postPopup.post-popup(style="display: none;")
+      .popup-content
+        h2 Tạo bài viết
+        form#postForm(action="/community/create-post" method="POST" enctype="multipart/form-data")
+          .form-group
+            label(for="caption") Tiêu đề
+            input#caption(type="text" name="caption" placeholder="Tiêu đề bài viết" required)
+          .form-group
+            label(for="desc") Nội dung
+            textarea#desc(name="desc" placeholder="Bạn đang nghĩ gì?" rows="4" required)
+          .form-group
+            label(for="img") Hinh ảnh
+            input#img(type="file" name="img" accept="image/*")
+          .form-actions
+            button.cancel-btn(type="button") Hủy
+            button(type="submit") Đăng bài
 
-                    .right
-                        .user-profile
-                            if post.author
-                                img.avatar(src=post.author.avatar, alt="User Avatar")
-                                span.username= post.author.username
-                            
-                        .post-options-menu
-                            button.options-btn
-                                img(src="/img/Dau33.png", alt="Tùy chọn")
-                            if user && post.author && user._id.toString() === post.author._id.toString()
-                                .options-dropdown(style="display: none;")
-                                    button.edit-btn(data-post-id=post._id) Chỉnh sửa
-                                    button.delete-btn(data-post-id=post._id) Xóa
+    // Duyệt bài viết
+    each post in posts
+      .post(data-post-id=post._id)
+        .post-header
+          - var postDate = post.createdAt ? new Date(post.createdAt).toLocaleDateString("vi-VN") : "Ngày không hợp lệ";
+          span.date= postDate
+          span.separator •
+          span.read-time 30 phút
+          a.category(href="") Học Tập
 
-                        .likes
-                            button.like-btn(data-post-id=post._id class=(user && post.likes && post.likes.includes(user._id)) ? "liked" : "")
-                                span ❤️
-                            span.likes-count= (post.likes && post.likes.length) ? post.likes.length : 0
-                            button 💬
-                            span= (post.comments && post.comments.length) ? post.comments.length : 0
+        .post-content
+          .left
+            h2= post.caption
+            p= post.desc
+            if post.img
+              .post-image
+                img(src=post.img, alt="Hình ảnh bài viết")
 
-                        .comments
-                            if post.comments && post.comments.length > 0
-                                each comment in post.comments
-                                    .comment
-                                        .user-info
-                                            if comment.author
-                                                img.avatar(src=comment.author.avatar, alt="User Avatar")
-                                                span.by by
-                                                span.username= comment.author.username
-                                                - var commentDate = comment.createdAt ? new Date(comment.createdAt).toLocaleDateString("vi-VN") : "Không xác định";
-                                                span.time / #{commentDate}
-                                        p= comment.text
-                            else
-                                p Chưa có bình luận nào hãy là người đầu tiên bình luận!
-                            .comment-box
-                                if user
-                                    img.avatar(src=user.avatar, alt="User Avatar")
-                                    input.comment-text(type="text" placeholder="Viết bình luận...")
-                                    button.comment-submit Đăng
+          .right
+            .user-profile
+              if post.author
+                img.avatar(src=post.author.avatar, alt="User Avatar")
+                span.username= post.author.username
 
+            .post-options-menu
+              button.options-btn
+                img(src="/img/Dau33.png" alt="Tùy chọn")
+              if user && post.author && user._id.toString() === post.author._id.toString()
+                .options-dropdown(style="display: none;")
+                  button.edit-btn(data-post-id=post._id) Chỉnh sửa
+                  button.delete-btn(data-post-id=post._id) Xóa
+
+            .likes
+              button.like-btn(data-post-id=post._id class=(user && post.likes && post.likes.includes(user._id)) ? "liked" : "")
+                span ❤️
+              span.likes-count= (post.likes && post.likes.length) ? post.likes.length : 0
+              button 💬
+              span= (post.comments && post.comments.length) ? post.comments.length : 0
+
+            .comments
+              if post.comments && post.comments.length > 0
+                each comment in post.comments
+                  .comment
+                    .user-info
+                      if comment.author
+                        img.avatar(src=comment.author.avatar, alt="User Avatar")
+                        span.by by
+                        span.username= comment.author.username
+                        - var commentDate = comment.createdAt ? new Date(comment.createdAt).toLocaleDateString("vi-VN") : "Không xác định";
+                        span.time / #{commentDate}
+                    p= comment.text
+              else
+                p Chưa có bình luận nào hãy là người đầu tiên bình luận!
+              .comment-box
+                if user
+                  img.avatar(src=user.avatar, alt="User Avatar")
+                  input.comment-text(type="text" placeholder="Viết bình luận...")
+                  button.comment-submit Đăng
+
+    // Pagination
+    if totalPages > 1
+      .pagination-container(style="display: flex; justify-content: center; align-items: center; margin: 30px 0; gap: 10px;")
+        if hasPrevPage
+          a.pagination-btn(href=`/community?page=${currentPage - 1}` style="padding: 10px 20px; background: #1877f2; color: white; border-radius: 5px; text-decoration: none; font-weight: bold;") ← Trước
+        else
+          span.pagination-btn.disabled(style="padding: 10px 20px; background: #ccc; color: #666; border-radius: 5px; cursor: not-allowed;") ← Trước
+
+        span.pagination-info(style="padding: 10px 20px; font-weight: bold; color: #333;") Trang #{currentPage} / #{totalPages}
+
+        if hasNextPage
+          a.pagination-btn(href=`/community?page=${currentPage + 1}` style="padding: 10px 20px; background: #1877f2; color: white; border-radius: 5px; text-decoration: none; font-weight: bold;") Tiếp →
+        else
+          span.pagination-btn.disabled(style="padding: 10px 20px; background: #ccc; color: #666; border-radius: 5px; cursor: not-allowed;") Tiếp →
 
 block script
-    script(src="./js/communitycouser/community.js" type="module")
+  script(src="./js/communitycouser/community.js" type="module")

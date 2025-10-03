@@ -10,21 +10,27 @@ block main
         .card-data(data=JSON.stringify(flashCard))
     .container
         .box
-            button#clear.clear.btn.btn-custom
-                i.fas.fa-trash.mr-2
-                |  Xóa tất cả
+            if isOwner
+                button#clear.clear.btn.btn-custom
+                    i.fas.fa-trash.mr-2
+                    |  Xóa tất cả
             button#random.clear.btn.btn-custom
                 i.fas.fa-random.mr-2
                 |  Trộn thẻ
             button#reverse.clear.btn.btn-custom
                 i.fas.fa-retweet.mr-2
-                |  Đảo 
+                |  Đảo
 
         h1
             | Thẻ [#{flashCard.name}]
-            button#show.btn.btn-custom
-                i.fas.fa-plus.mr-2
-                |  Thêm mới
+            if flashCard.user
+                span(style="font-size: 0.5em; color: #888; margin-left: 10px;")
+                    i.fas.fa-user(style="margin-right: 5px;")
+                    | #{flashCard.user.username}
+            if isOwner
+                button#show.btn.btn-custom
+                    i.fas.fa-plus.mr-2
+                    |  Thêm mới
         #cards-container.cards
         .navigation
             button#prev.nav-button
@@ -32,32 +38,33 @@ block main
             p#current
             button#next.nav-button
                 i.fas.fa-arrow-right
-        #add-container.add-container.card-animation
-            h1
-                | Thêm thẻ mới
-                button#hide.btn.btn-small.btn-custom
-                    i.fas.fa-times
-            .form-group
-                label(for='vocabylary') Câu hỏi
-                textarea#question(placeholder='Nhập câu hỏi...')
-            #alert
-            .form-group
-                label(for='meaning') Trả lời
-                textarea#answer(placeholder='Nhập câu trả lời...')
-            .button-group
-                button#AI-gen.btn.btn-margin.btn-custom
-                    i.fas.fa-robot.mr-2
-                    |  AI Gennarate
-                select#outputLang.language-select
-                    option(value='en' data-flag='🇬🇧' data-img="https://tienichhay.net/uploads/flags/shiny/16x16/us.png") ENG
-                    option(value='Vietnamese' data-flag='🇻🇳' data-img="https://tienichhay.net/uploads/flags/shiny/16x16/vn.png") VIE
-                    option(value='Japanese(hiragana or katakana)' data-flag='🇯🇵' data-img="https://tienichhay.net/uploads/flags/shiny/16x16/jp.png") JA
-                    option(value='Chinese' data-flag='🇨🇳' data-img="https://tienichhay.net/uploads/flags/shiny/16x16/cn.png") CN
-                    option(value='Thai' data-flag='🇹🇭' data-img="https://tienichhay.net/uploads/flags/shiny/16x16/th.png") TH
-                    option(value='Korean' data-flag='🇰🇷' data-img="https://tienichhay.net/uploads/flags/shiny/16x16/kr.png") KR
-            button#add-card.btn.btn-margin.btn-custom
-                i.fas.fa-plus.mr-2
-                |  Th&ecirc;m th&#x1EBB;
+        if isOwner
+            #add-container.add-container.card-animation
+                h1
+                    | Thêm thẻ mới
+                    button#hide.btn.btn-small.btn-custom
+                        i.fas.fa-times
+                .form-group
+                    label(for='vocabylary') Câu hỏi
+                    textarea#question(placeholder='Nhập câu hỏi...')
+                #alert
+                .form-group
+                    label(for='meaning') Trả lời
+                    textarea#answer(placeholder='Nhập câu trả lời...')
+                .button-group
+                    button#AI-gen.btn.btn-margin.btn-custom
+                        i.fas.fa-robot.mr-2
+                        |  AI Gennarate
+                    select#outputLang.language-select
+                        option(value='en' data-flag='🇬🇧' data-img="https://tienichhay.net/uploads/flags/shiny/16x16/us.png") ENG
+                        option(value='Vietnamese' data-flag='🇻🇳' data-img="https://tienichhay.net/uploads/flags/shiny/16x16/vn.png") VIE
+                        option(value='Japanese(hiragana or katakana)' data-flag='🇯🇵' data-img="https://tienichhay.net/uploads/flags/shiny/16x16/jp.png") JA
+                        option(value='Chinese' data-flag='🇨🇳' data-img="https://tienichhay.net/uploads/flags/shiny/16x16/cn.png") CN
+                        option(value='Thai' data-flag='🇹🇭' data-img="https://tienichhay.net/uploads/flags/shiny/16x16/th.png") TH
+                        option(value='Korean' data-flag='🇰🇷' data-img="https://tienichhay.net/uploads/flags/shiny/16x16/kr.png") KR
+                button#add-card.btn.btn-margin.btn-custom
+                    i.fas.fa-plus.mr-2
+                    |  Th&ecirc;m th&#x1EBB;
         button#learn.btn.btn-custom
             i.fas.fa-graduation-cap.mr-2
             |  Bài tập - (AI Gennarate)

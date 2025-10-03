@@ -6,7 +6,16 @@
   "type": "module",
   "scripts": {
     "start": "npx nodemon --inspect index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "seed": "node scripts/seed-flashcards.js",
+    "test:performance": "node scripts/test-performance.js",
+    "cache:clear": "node scripts/cache-manager.js clear",
+    "cache:stats": "node scripts/cache-manager.js stats",
+    "cache:health": "node scripts/cache-manager.js health",
+    "cache:keys": "node scripts/cache-manager.js keys",
+    "redis:start": "docker-compose up -d",
+    "redis:stop": "docker-compose down",
+    "redis:logs": "docker-compose logs -f redis"
   },
   "keywords": [],
   "author": "",
@@ -26,6 +35,7 @@
     "express-session": "^1.18.1",
     "fluent-ffmpeg": "^2.1.3",
     "franc": "^6.2.0",
+    "ioredis": "^5.8.0",
     "jsonwebtoken": "^9.0.2",
     "method-override": "^3.0.0",
     "mongodb": "^6.12.0",
@@ -35,6 +45,7 @@
     "peer": "^1.0.2",
     "playht": "^0.16.0",
     "pug": "^3.0.3",
+    "redis": "^5.8.3",
     "sharp": "^0.33.5",
     "socket.io": "^4.8.1",
     "streamifier": "^0.1.1",

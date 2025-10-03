@@ -248,6 +248,175 @@ button {
   background: #d35400;
   transform: scale(1.05);
 }
+/* Section titles */
+.section-title {
+  font-size: 1.8em;
+  color: #333;
+  margin-bottom: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+}
+
+.my-flashcards-section,
+.others-flashcards-section {
+  width: 100%;
+  margin-bottom: 40px;
+}
+
+/* Search container */
+.search-container {
+  position: relative;
+  display: inline-block;
+}
+
+.search-input {
+  padding: 10px 40px 10px 15px !important;
+  border: 2px solid #ddd;
+  border-radius: 25px;
+  width: 300px;
+  outline: none;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.search-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.1);
+}
+
+.search-container i {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  pointer-events: none;
+}
+
+/* Load more buttons */
+.load-more-container {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.load-more-btn,
+.show-less-btn {
+  padding: 12px 30px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-block;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.load-more-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.load-more-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.show-less-btn {
+  background: #e0e0e0;
+  color: #666;
+  margin-left: 10px;
+}
+
+.show-less-btn:hover {
+  background: #d0d0d0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  grid-column: 1/-1;
+}
+
+.empty-state i {
+  font-size: 3em;
+  color: #ddd;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.empty-state h3 {
+  color: #999;
+  font-weight: 400;
+}
+
+/* Pagination styles */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 30px 0;
+  gap: 10px;
+}
+
+.pagination-btn {
+  padding: 10px 20px;
+  background: #1877f2;
+  color: white;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.pagination-btn:hover {
+  background: #145dbf;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(24, 119, 242, 0.3);
+}
+
+.pagination-btn.disabled {
+  background: #ccc;
+  color: #666;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.pagination-info {
+  padding: 10px 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Section header */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+/* Responsive cho search */
+@media (max-width: 768px) {
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .search-input {
+    width: 100%;
+  }
+
+  .search-container {
+    width: 100%;
+  }
+}
+
 /* bong bóng */
 /* Import font thanh lịch */
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lora:wght@400;700&display=swap");
