@@ -10,16 +10,37 @@ const shuffleButton = document.getElementById("random"); // Nút trộn thẻ
 const alertMessage = document.getElementById("alert");
 // Lấy dữ liệu từ HTML (Pug đã render)
 const cardData = document.querySelector(".card-data");
-const flashcard = JSON.parse(cardData.getAttribute("data"));
-const listCard = flashcard.cards;
+let flashcard = null;
+let listCard = [];
+
+if (!cardData) {
+    console.error("Card data element not found!");
+} else {
+    try {
+        const dataAttr = cardData.getAttribute("data");
+        if (dataAttr) {
+            flashcard = JSON.parse(dataAttr);
+            listCard = flashcard.cards || [];
+        } else {
+            console.error("Data attribute is empty");
+        }
+    } catch (error) {
+        console.error("Error parsing card data:", error);
+    }
+}
 
 let isReversed = false;
 
 // Chuyển đổi dữ liệu từ BE thành { question, answer }
-let cardsData = listCard.map(card => ({
-    question: card.vocabulary,
-    answer: card.meaning
-}));
+let cardsData = [];
+if (listCard && Array.isArray(listCard)) {
+    cardsData = listCard.map(card => ({
+        question: card.vocabulary,
+        answer: card.meaning
+    }));
+} else {
+    console.error("No cards data found or invalid format:", listCard);
+}
 
 let currentActiveCard = 0;
 let cardsElement = [];
@@ -28,7 +49,20 @@ let cardsElement = [];
 function createCards() {
     cardsContainer.innerHTML = ""; // Xóa danh sách cũ
     cardsElement = []; // Xóa danh sách phần tử cũ
+
+    if (cardsData.length === 0) {
+        cardsContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">Không có thẻ nào trong bộ này</div>';
+        return;
+    }
+
     cardsData.forEach((data, index) => createCard(data, index));
+    updateCurrentCardDisplay();
+}
+
+function updateCurrentCardDisplay() {
+    if (currentElement) {
+        currentElement.innerText = `${currentActiveCard + 1}/${cardsElement.length}`;
+    }
 }
 
 
@@ -92,11 +126,13 @@ async function speakText(text) {
     }
 }
 function updateCurrentText() {
-    currentElement.innerText = `${currentActiveCard + 1}/${cardsElement.length}`;
+    if (currentElement) {
+        currentElement.innerText = `${currentActiveCard + 1}/${cardsElement.length}`;
+    }
 }
 
 // Chuyển card tiếp theo
-nextButton.addEventListener("click", () => {
+nextButton?.addEventListener("click", () => {
     cardsElement[currentActiveCard].className = "card left";
     currentActiveCard++;
     if (currentActiveCard > cardsElement.length - 1) {
@@ -107,7 +143,7 @@ nextButton.addEventListener("click", () => {
 });
 
 // Chuyển card trước đó
-prevButton.addEventListener("click", () => {
+prevButton?.addEventListener("click", () => {
     cardsElement[currentActiveCard].className = "card right";
     currentActiveCard--;
     if (currentActiveCard < 0) {
@@ -118,10 +154,10 @@ prevButton.addEventListener("click", () => {
 });
 
 // Mở form thêm card
-showButton.addEventListener("click", () => addContainer.classList.add("show"));
+showButton?.addEventListener("click", () => addContainer.classList.add("show"));
 
 // Đóng form thêm card
-hideButton.addEventListener("click", () => {
+hideButton?.addEventListener("click", () => {
     addContainer.classList.remove("show");
     document.getElementById("question").value = "";
     document.getElementById("answer").value = "";
@@ -129,7 +165,7 @@ hideButton.addEventListener("click", () => {
 });
 
 // Trộn ngẫu nhiên danh sách thẻ
-shuffleButton.addEventListener("click", () => {
+shuffleButton?.addEventListener("click", () => {
     if (cardsData.length === 0) {
         alertMessage.innerText = "Không có thẻ để trộn!";
         setTimeout(() => {
@@ -152,49 +188,55 @@ shuffleButton.addEventListener("click", () => {
 createCards();
 
 // Thêm card mới
-document.getElementById("add-card").addEventListener("click", async () => {
-    const vocabulary = document.getElementById("question").value.trim();
-    const meaning = document.getElementById("answer").value.trim();
-    const flashCardId = flashcard._id;
+const addCardBtn = document.getElementById("add-card");
+if (addCardBtn) {
+    addCardBtn.addEventListener("click", async () => {
+        const vocabulary = document.getElementById("question").value.trim();
+        const meaning = document.getElementById("answer").value.trim();
+        const flashCardId = flashcard._id;
 
-    if (!vocabulary || !meaning) {
-        return;
-    }
-
-    try {
-        const response = await fetch(`/flashcards/card/${flashCardId}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-            },
-            body: JSON.stringify({ vocabulary, meaning }),
-        });
-
-        if (!response.ok) {
-            throw new Error("Lỗi khi gửi dữ liệu");
+        if (!vocabulary || !meaning) {
+            return;
         }
 
-        const data = await response.json();
-        console.log(data.message); // Kiểm tra phản hồi từ server
-        alertMessage.innerText = data.message;
-        setTimeout(() => {
-            alertMessage.innerText = "";
-        }, 2000);
-        // Tải lại trang để cập nhật danh sách thẻ
-    } catch (error) {
-        console.error("Lỗi khi thêm thẻ:", error);
-    }
-});
+        try {
+            const response = await fetch(`/flashcards/card/${flashCardId}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                body: JSON.stringify({ vocabulary, meaning }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Lỗi khi gửi dữ liệu");
+            }
+
+            const data = await response.json();
+            console.log(data.message); // Kiểm tra phản hồi từ server
+            alertMessage.innerText = data.message;
+            setTimeout(() => {
+                alertMessage.innerText = "";
+            }, 2000);
+            // Tải lại trang để cập nhật danh sách thẻ
+        } catch (error) {
+            console.error("Lỗi khi thêm thẻ:", error);
+        }
+    });
+}
 
 $(document).ready(function () {
     // Khởi tạo Select2
-    $('#outputLang').select2({
-        templateResult: formatLanguage, // Hiển thị trong dropdown
-        templateSelection: formatLanguage, // Hiển thị khi chọn
-        placeholder: 'Chọn ngôn ngữ',
-        allowClear: true,
-    });
+    const outputLangSelect = $('#outputLang');
+    if (outputLangSelect.length) {
+        outputLangSelect.select2({
+            templateResult: formatLanguage, // Hiển thị trong dropdown
+            templateSelection: formatLanguage, // Hiển thị khi chọn
+            placeholder: 'Chọn ngôn ngữ',
+            allowClear: true,
+        });
+    }
 
     // Hàm hiển thị quốc kỳ và tên ngôn ngữ
     function formatLanguage(language) {
@@ -214,39 +256,41 @@ $(document).ready(function () {
     const aiGenButton = document.getElementById('AI-gen');
     const alertDiv = document.getElementById('alert');
 
-    aiGenButton.addEventListener('click', async () => {
-        const questionText = questionTextarea.value.trim();
-        const outputLang = $('#outputLang').val() || 'en'; // Lấy giá trị từ Select2
+    if (aiGenButton) {
+        aiGenButton.addEventListener('click', async () => {
+            const questionText = questionTextarea.value.trim();
+            const outputLang = $('#outputLang').val() || 'en'; // Lấy giá trị từ Select2
 
-        if (!questionText) {
-            alertDiv.innerHTML = '<p class="text-danger">Vui lòng nhập câu hỏi!</p>';
-            return;
-        }
-
-        alertDiv.innerHTML = '';
-
-        try {
-            const response = await fetch('/AI-gen', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer YOUR_AUTH_TOKEN',
-                },
-                body: JSON.stringify({ question: questionText, outputLang: outputLang }),
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+            if (!questionText) {
+                alertDiv.innerHTML = '<p class="text-danger">Vui lòng nhập câu hỏi!</p>';
+                return;
             }
 
-            const data = await response.json();
-            answerTextarea.value = data.answer;
+            alertDiv.innerHTML = '';
 
-        } catch (error) {
-            console.error('Lỗi khi gọi API /AI-gen:', error);
-            alertDiv.innerHTML = '<p class="text-danger">Đã có lỗi xảy ra. Vui lòng thử lại!</p>';
-        }
-    });
+            try {
+                const response = await fetch('/AI-gen', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer YOUR_AUTH_TOKEN',
+                    },
+                    body: JSON.stringify({ question: questionText, outputLang: outputLang }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                answerTextarea.value = data.answer;
+
+            } catch (error) {
+                console.error('Lỗi khi gọi API /AI-gen:', error);
+                alertDiv.innerHTML = '<p class="text-danger">Đã có lỗi xảy ra. Vui lòng thử lại!</p>';
+            }
+        });
+    }
 
     const learnBtn = document.getElementById('learn');
     const choiseContainer = document.getElementById('choise-container');
@@ -256,7 +300,9 @@ $(document).ready(function () {
     } else {
         console.log('Không tìm thấy phần tử');
     }
-    closeBtn.addEventListener('click', () => { choiseContainer.classList.remove('show') });
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => { choiseContainer.classList.remove('show') });
+    }
 
 });
 
@@ -264,10 +310,10 @@ $(document).ready(function () {
 document.addEventListener('keydown', (e) => {
     switch (e.key) {
         case 'ArrowRight':
-            nextButton.click();
+            if (nextButton) nextButton.click();
             break;
         case 'ArrowLeft':
-            prevButton.click();
+            if (prevButton) prevButton.click();
             break;
         case 'ArrowDown':
         case ' ':
@@ -281,16 +327,17 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+const reverseBtn = document.getElementById("reverse");
+if (reverseBtn) {
+    reverseBtn.addEventListener("click", () => {
+        isReversed = !isReversed;
 
+        cardsData = listCard.map(card => ({
+            question: isReversed ? card.meaning : card.vocabulary,
+            answer: isReversed ? card.vocabulary : card.meaning
+        }));
 
-document.getElementById("reverse").addEventListener("click", () => {
-    isReversed = !isReversed;
-
-    cardsData = listCard.map(card => ({
-        question: isReversed ? card.meaning : card.vocabulary,
-        answer: isReversed ? card.vocabulary : card.meaning
-    }));
-
-    createCards();
-});
+        createCards();
+    });
+}
 

@@ -11,6 +11,7 @@ import http from 'http';
 import { ExpressPeerServer } from 'peer';
 import flash from 'express-flash';
 import connectDB from "./utils/db.js";
+import redisCache from "./utils/redis.js";
 import router from './routes/index.js';
 import session from 'express-session';
 
@@ -38,6 +39,9 @@ app.use(flash());
 
 // Kết nối MongoDB
 await connectDB();
+
+// Kết nối Redis
+await redisCache.connect();
 
 // Cấu hình method-override và body-parser
 app.use(methodOverride('_method'));
