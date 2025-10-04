@@ -8,6 +8,7 @@
     "start": "npx nodemon --inspect index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "seed": "node scripts/seed-flashcards.js",
+    "clear": "node scripts/clear-flashcards.js",
     "test:performance": "node scripts/test-performance.js",
     "cache:clear": "node scripts/cache-manager.js clear",
     "cache:stats": "node scripts/cache-manager.js stats",

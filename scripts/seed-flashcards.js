@@ -116,20 +116,14 @@ async function createFakeFlashcards() {
 
         console.log(`✅ Found user: ${user.username} (${user._id})`);
 
-        // Check existing flashcards count
+        // Check existing flashcards count (for info only)
         const existingCount = await FlashCard.countDocuments({ user: user._id });
-        console.log(`📊 Existing flashcards: ${existingCount}`);
+        console.log(`📊 Current flashcards: ${existingCount}`);
 
-        // Calculate how many to create - 10,000 FLASHCARD SETS
-        const targetCount = 10000;
-        const toCreate = Math.max(0, targetCount - existingCount);
-
-        if (toCreate === 0) {
-            console.log(`✅ Already have ${targetCount}+ flashcards`);
-            return;
-        }
-
-        console.log(`🚀 Creating ${toCreate} flashcards...`);
+        // Always create 1,000 new flashcards each time (add to existing)
+        const toCreate = 1000;
+        console.log(`🚀 Creating ${toCreate} new flashcards...`);
+        console.log(`📈 After completion: ${existingCount} + ${toCreate} = ${existingCount + toCreate} flashcards`);
 
         // Create flashcards in batches
         const batchSize = 50;
@@ -140,7 +134,8 @@ async function createFakeFlashcards() {
             const currentBatchSize = Math.min(batchSize, toCreate - batch * batchSize);
 
             for (let i = 0; i < currentBatchSize; i++) {
-                const globalIndex = batch * batchSize + i;
+                // Use existingCount as offset to ensure unique names
+                const globalIndex = existingCount + batch * batchSize + i;
                 const topicName = topicNames[globalIndex % topicNames.length];
                 const cardCount = Math.floor(Math.random() * 15) + 5; // 5-20 cards per set
 
@@ -158,7 +153,12 @@ async function createFakeFlashcards() {
         }
 
         const finalCount = await FlashCard.countDocuments({ user: user._id });
-        console.log(`🎉 Done! Total flashcards: ${finalCount}`);
+        console.log(`\n✅ Seed completed successfully!`);
+        console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+        console.log(`📊 TOTAL FLASHCARDS: ${finalCount}`);
+        console.log(`➕ Added this run: ${toCreate}`);
+        console.log(`📈 Previous: ${existingCount} → Current: ${finalCount}`);
+        console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
 
     } catch (error) {
         console.error('❌ Error:', error);
@@ -170,3 +170,16 @@ async function createFakeFlashcards() {
 
 // Run the script
 createFakeFlashcards();
+
+/*
+ * Usage:
+ *
+ * Each run creates 1,000 new flashcards (no deletion, no limit check):
+ *    node scripts/seed-flashcards.js
+ *
+ * Run multiple times to accumulate flashcards:
+ *    1st run: 1,000 flashcards
+ *    2nd run: 2,000 flashcards (1,000 + 1,000)
+ *    3rd run: 3,000 flashcards (2,000 + 1,000)
+ *    ...and so on
+ */

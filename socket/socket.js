@@ -67,11 +67,43 @@ const handleUserDisconnection = async (socket, userId) => {
 };
 
 // Xử lý tin nhắn
-const handleChatMessage = (socket, { receiverId, message, senderId }) => {
+const handleChatMessage = async (socket, { receiverId, message, senderId }) => {
     const receiverSockets = getReciverSocketIds(receiverId);
     receiverSockets.forEach(socketId => {
         io.to(socketId).emit("newMessage", { senderId, message, timestamp: new Date() });
     });
+
+    console.log(`💬 Message: ${senderId} → ${receiverId}: ${message}`);
+
+    // Lưu tin nhắn vào database
+    try {
+        const Conversation = (await import('../models/conversation.model.js')).default;
+        const Message = (await import('../models/message.model.js')).default;
+
+        let conversation = await Conversation.findOne({
+            members: { $all: [senderId, receiverId] }
+        });
+
+        if (!conversation) {
+            conversation = await Conversation.create({
+                members: [senderId, receiverId],
+                messages: []
+            });
+        }
+
+        const newMessage = await Message.create({
+            senderId,
+            receiverId,
+            message
+        });
+
+        conversation.messages.push(newMessage._id);
+        await conversation.save();
+
+        console.log('✅ Message saved to database');
+    } catch (error) {
+        console.error('❌ Error saving message:', error);
+    }
 };
 //gửi peerID server nhận được từ client cho người nhận
 const sendPeerId = (socket, { receiverId, callerId, peerId }) => {
@@ -113,8 +145,17 @@ io.on("connection", (socket) => {
     socket.on("sendMessage", (data) => handleChatMessage(socket, data));
 
     socket.on("sendNotification", (data) => handleNotification(socket, data));
+
     //gửi peerID server nhận được từ client cho người nhận
     socket.on("sendPeerId", (data) => sendPeerId(socket, data));
+
+    // Xử lý typing indicator
+    socket.on("typing", ({ receiverId, isTyping }) => {
+        const receiverSocketIds = getReciverSocketIds(receiverId);
+        receiverSocketIds.forEach(socketId => {
+            io.to(socketId).emit("userTyping", { senderId: userId, isTyping });
+        });
+    });
 
     socket.on("disconnect", () => {
         handleUserDisconnection(socket, userId);
