@@ -21,9 +21,11 @@ body {
 .control {
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
-  margin-bottom: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 0;
+  width: 100%;
 }
 
 .flashcards {
@@ -231,19 +233,28 @@ body {
   }
 }
 .control a,
-button {
+.control button {
   display: inline-block;
-  padding: 6px 12px;
+  padding: 6px 10px;
   background: var(--primary-color);
   color: #fff;
   text-decoration: none;
   border-radius: 8px;
   border: none;
-  font-size: 0.9em;
+  font-size: 0.86em;
   transition: all 0.3s ease;
   box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
 }
 
+.control form {
+  margin: 0;
+}
+
+.control .delete-card {
+  min-width: 48px;
+}
+
+.control a:hover,
 .control button:hover {
   background: #d35400;
   transform: scale(1.05);

@@ -29,6 +29,18 @@ function escapeHtml(value) {
         "'": "&#039;",
     }[char]));
 }
+
+function hasJapaneseText(value) {
+    return /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(String(value || ""));
+}
+
+function getImageSearchQuery(card) {
+    if (!card) return "";
+    if (hasJapaneseText(card.vocabulary)) return card.vocabulary.trim();
+    if (hasJapaneseText(card.meaning)) return card.meaning.trim();
+    return (card.vocabulary || card.meaning || "").trim();
+}
+
 let isReversed = false;
 
 // Chuyển đổi dữ liệu từ BE thành { question, answer }
@@ -301,9 +313,12 @@ function renderSelectedImage(url) {
 previewUrlInput.addEventListener("input", () => renderSelectedImage(previewUrlInput.value.trim()));
 
 searchCardImageButton.addEventListener("click", async () => {
-    const query = document.getElementById("question").value.trim();
+    const query = getImageSearchQuery({
+        vocabulary: document.getElementById("question").value,
+        meaning: document.getElementById("answer").value,
+    });
     if (!query) {
-        imageSearchPanel.innerHTML = '<p class="image-search-message">Nhập câu hỏi trước để tìm ảnh.</p>';
+        imageSearchPanel.innerHTML = '<p class="image-search-message">Nhập câu hỏi hoặc trả lời trước để tìm ảnh.</p>';
         return;
     }
 

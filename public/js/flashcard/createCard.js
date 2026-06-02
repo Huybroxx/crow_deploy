@@ -35,6 +35,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }[char]));
     }
 
+    function hasJapaneseText(value) {
+        return /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(String(value || ''));
+    }
+
+    function getImageSearchQuery(card) {
+        if (!card) return '';
+        if (hasJapaneseText(card.vocabulary)) return card.vocabulary.trim();
+        if (hasJapaneseText(card.meaning)) return card.meaning.trim();
+        return (card.vocabulary || card.meaning || '').trim();
+    }
+
     function parseCardLine(line) {
         const trimmedLine = String(line || '').trim();
         if (!trimmedLine) return null;
@@ -101,6 +112,7 @@ document.addEventListener('DOMContentLoaded', function () {
             validCards++;
             const cardKey = `card-${index}`;
             const previewUrl = parsed.previewUrl || selectedImages[cardKey] || '';
+            const imageSearchQuery = getImageSearchQuery(parsed);
             const cardItem = document.createElement('div');
             cardItem.className = 'card-item';
             cardItem.innerHTML = `
@@ -111,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         <span><strong>${escapeHtml(parsed.vocabulary)}</strong> - ${escapeHtml(parsed.meaning)}</span>
                     </div>
                     <div class="card-actions">
-                        <button type="button" class="btn-search-image" data-index="${index}" data-query="${escapeHtml(parsed.vocabulary)}">
+                        <button type="button" class="btn-search-image" data-index="${index}" data-query="${escapeHtml(imageSearchQuery)}">
                             <i class="fas fa-magnifying-glass"></i> Tìm ảnh
                         </button>
                         <button type="button" class="btn-remove" data-index="${index}">Xóa</button>
@@ -168,12 +180,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
     async function searchImages(index, query) {
         const cardKey = `card-${index}`;
+        const searchQuery = String(query || '').trim();
+        if (!searchQuery) {
+            imageMessages[cardKey] = 'Không có nội dung để tìm ảnh.';
+            renderPreview();
+            return;
+        }
+
         loadingSearches.add(cardKey);
         imageMessages[cardKey] = '';
         renderPreview();
 
         try {
-            const data = await fetchImageResults(query);
+            const data = await fetchImageResults(searchQuery);
 
             imageResults[cardKey] = data.items || [];
             imageMessages[cardKey] = imageResults[cardKey].length ? '' : 'Không tìm thấy ảnh phù hợp';
@@ -189,11 +208,11 @@ document.addEventListener('DOMContentLoaded', function () {
     async function searchAllImages() {
         const cards = getParsedCards().filter(({ index, parsed }) => {
             const cardKey = `card-${index}`;
-            return !(parsed.previewUrl || selectedImages[cardKey]);
+            return getImageSearchQuery(parsed) && !(parsed.previewUrl || selectedImages[cardKey]);
         });
 
         if (cards.length === 0) {
-            alert('Các thẻ hiện tại đã có ảnh hoặc chưa có thẻ hợp lệ để tìm.');
+            alert('Các thẻ hiện tại đã có ảnh hoặc chưa có nội dung hợp lệ để tìm.');
             return;
         }
 
@@ -213,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const cardKey = `card-${index}`;
 
             try {
-                const data = await fetchImageResults(parsed.vocabulary);
+                const data = await fetchImageResults(getImageSearchQuery(parsed));
                 return {
                     cardKey,
                     items: data.items || [],

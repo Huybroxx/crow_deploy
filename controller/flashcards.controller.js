@@ -60,6 +60,31 @@ const parseCardsText = (cardsText, selectedImages = {}) => {
         .filter(Boolean);
 };
 
+const parseCardsJson = (cardsJson) => {
+    let parsedCards = [];
+
+    try {
+        parsedCards = JSON.parse(cardsJson || '[]');
+    } catch (error) {
+        parsedCards = [];
+    }
+
+    if (!Array.isArray(parsedCards)) return [];
+
+    return parsedCards.map(card => {
+        const vocabulary = String(card?.vocabulary || '').trim();
+        const meaning = String(card?.meaning || '').trim();
+        const previewUrl = normalizeImageUrl(card?.previewUrl);
+        const normalizedCard = { vocabulary, meaning, previewUrl };
+
+        if (card?._id) {
+            normalizedCard._id = card._id;
+        }
+
+        return normalizedCard;
+    }).filter(card => card.vocabulary && card.meaning);
+};
+
 const mapSerperImages = (images = []) => images.map(img => ({
     imageUrl: img.imageUrl || '',
     thumbnailUrl: img.thumbnailUrl || img.imageUrl || '',
@@ -173,6 +198,55 @@ export const postCreateCard = async (req, res) => {
             cardsText: req.body.cardsText || '',
             selectedImages: req.body.selectedImages || '{}'
         });
+    }
+};
+
+export const getEditCard = async (req, res) => {
+    try {
+        const user = res.locals.user;
+        const flashCard = await FlashCard.findOne({ _id: req.params.id, user: user._id });
+
+        if (!flashCard) {
+            req.flash('error', 'Không tìm thấy bộ thẻ!');
+            return res.redirect('/flashcards');
+        }
+
+        res.render('./page/flashcards/edit', {
+            title: 'Chỉnh sửa bộ thẻ',
+            flashCard,
+        });
+    } catch (error) {
+        req.flash('error', 'Có lỗi khi tải trang chỉnh sửa!');
+        res.redirect('/flashcards');
+    }
+};
+
+export const postEditCard = async (req, res) => {
+    try {
+        const user = res.locals.user;
+        const flashCard = await FlashCard.findOne({ _id: req.params.id, user: user._id });
+
+        if (!flashCard) {
+            req.flash('error', 'Không tìm thấy bộ thẻ!');
+            return res.redirect('/flashcards');
+        }
+
+        const name = String(req.body.name || '').trim();
+        const cards = parseCardsJson(req.body.cardsJson);
+
+        if (!name || cards.length === 0) {
+            throw new Error('Vui lòng nhập tên bộ thẻ và ít nhất một card hợp lệ!');
+        }
+
+        flashCard.name = name;
+        flashCard.cards = cards;
+        await flashCard.save();
+
+        req.flash('success', 'Cập nhật bộ thẻ thành công!');
+        return res.redirect(`/flashcards/card/${flashCard._id}`);
+    } catch (error) {
+        req.flash('error', error.message || 'Có lỗi khi cập nhật bộ thẻ!');
+        return res.redirect(`/flashcards/edit/${req.params.id}`);
     }
 };
 

@@ -1,0 +1,51 @@
+extends ../../layout/default
+include ../../mixin/alert
+
+block style
+    link(rel="stylesheet" href="/css/flashcard/edit.css")
+    link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css")
+
+block main
+    +alert-success(5000)
+    +alert-error(5000)
+    .flashcard-edit-data(data-cards=JSON.stringify(flashCard.cards || []))
+    .edit-page
+        .edit-shell
+            .edit-header
+                div
+                    p.edit-kicker Flashcards
+                    h2 Chỉnh sửa bộ thẻ
+                .edit-header-actions
+                    a.btn-secondary-action(href=`/flashcards/card/${flashCard._id}`)
+                        i.fas.fa-arrow-left
+                        |  Quay lại học
+                    a.btn-secondary-action(href="/flashcards")
+                        i.fas.fa-layer-group
+                        |  Danh sách
+
+            form#editFlashcardForm(action=`/flashcards/edit/${flashCard._id}` method="POST")
+                input#cardsJson(type="hidden" name="cardsJson")
+                .deck-name-row
+                    label(for="name") Tên bộ thẻ
+                    input#name(type="text" name="name" value=flashCard.name required)
+
+                .edit-toolbar
+                    .edit-count#editCount 0 card
+                    .edit-toolbar-actions
+                        button#addCard(type="button")
+                            i.fas.fa-plus
+                            |  Thêm card
+                        button#searchAllMissing(type="button")
+                            i.fas.fa-images
+                            |  Tìm ảnh còn thiếu
+
+                #editCards.edit-cards
+
+                .edit-footer
+                    button.btn-save(type="submit")
+                        i.fas.fa-save
+                        |  Lưu thay đổi
+                    a.btn-cancel(href=`/flashcards/card/${flashCard._id}`) Hủy
+
+block script2
+    script(src="/js/flashcard/editCard.js" type="module")

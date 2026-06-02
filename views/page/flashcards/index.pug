@@ -34,6 +34,7 @@ block main
                             .control
                                 a(href=`/flashcards/card/${flashcard._id}`) Xem
                                 a(href=`/flashcards/list/${flashcard._id}`) List
+                                a(href=`/flashcards/edit/${flashcard._id}`) Sửa
                                 form(action=`/flashcards/delete/${flashcard._id}?_method=DELETE` method="POST")
                                     button(type="submit" class="delete-card") Xóa
             else

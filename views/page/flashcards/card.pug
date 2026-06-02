@@ -19,6 +19,9 @@ block main
             button#reverse.clear.btn.btn-custom
                 i.fas.fa-retweet.mr-2
                 |  Đảo
+            a#edit-set.clear.btn.btn-custom(href=`/flashcards/edit/${flashCard._id}`)
+                i.fas.fa-pen.mr-2
+                |  Sửa
             .image-mode-toggle(role="group" aria-label="Chế độ hiển thị ảnh")
                 button.image-mode-btn(type="button" data-image-mode="front" title="Hiện ảnh ở mặt trước")
                     i.fas.fa-image
