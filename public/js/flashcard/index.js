@@ -12,22 +12,63 @@ const alertMessage = document.getElementById("alert");
 const cardData = document.querySelector(".card-data");
 const flashcard = JSON.parse(cardData.getAttribute("data"));
 const listCard = flashcard.cards;
+const imageModeButtons = document.querySelectorAll(".image-mode-btn");
+const IMAGE_DISPLAY_MODES = ["front", "back", "both"];
+const imageModeStorageKey = `flashcard-image-display-mode-${flashcard._id}`;
+let imageDisplayMode = localStorage.getItem(imageModeStorageKey) || "front";
+if (!IMAGE_DISPLAY_MODES.includes(imageDisplayMode)) {
+    imageDisplayMode = "front";
+}
 
+function escapeHtml(value) {
+    return String(value || "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;",
+    }[char]));
+}
 let isReversed = false;
 
 // Chuyển đổi dữ liệu từ BE thành { question, answer }
 let cardsData = listCard.map(card => ({
     question: card.vocabulary,
-    answer: card.meaning
+    answer: card.meaning,
+    previewUrl: card.previewUrl || ''
 }));
-
 let currentActiveCard = 0;
 let cardsElement = [];
+
+function shouldShowImageOn(side) {
+    return imageDisplayMode === "both" || imageDisplayMode === side;
+}
+
+function getImageHtml(data, side) {
+    if (!data.previewUrl || !shouldShowImageOn(side)) return "";
+
+    const altText = side === "front" ? data.question : data.answer;
+    return `<img class="card-preview-image" src="${escapeHtml(data.previewUrl)}" alt="${escapeHtml(altText)}" loading="lazy">`;
+}
+
+function updateImageModeButtons() {
+    imageModeButtons.forEach(button => {
+        const isActive = button.dataset.imageMode === imageDisplayMode;
+        button.classList.toggle("active", isActive);
+        button.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
+}
 
 // Tạo các card từ dữ liệu BE
 function createCards() {
     cardsContainer.innerHTML = ""; // Xóa danh sách cũ
     cardsElement = []; // Xóa danh sách phần tử cũ
+    if (cardsData.length === 0) {
+        currentElement.innerText = "0/0";
+        return;
+    }
+
+    currentActiveCard = Math.min(currentActiveCard, cardsData.length - 1);
     cardsData.forEach((data, index) => createCard(data, index));
 }
 
@@ -35,16 +76,24 @@ function createCards() {
 function createCard(data, index) {
     const card = document.createElement("div");
     card.classList.add("card");
-    if (index === 0) card.classList.add("active");
+    if (index === currentActiveCard) card.classList.add("active");
+    const frontImageHtml = getImageHtml(data, "front");
+    const backImageHtml = getImageHtml(data, "back");
     card.innerHTML = `
         <div class="inner-card card-animation">
             <div class="inner-card-front">
-                <p style="font-size:1.5rem">${data.question}</p>
-                <button class="voice-btn front-voice" data-text="${data.question}"><i class="fa-solid fa-volume-high"></i></i></button>
+                <div class="inner-card-content">
+                    ${frontImageHtml}
+                    <p style="font-size:1.5rem">${escapeHtml(data.question)}</p>
+                </div>
+                <button class="voice-btn front-voice" data-text="${escapeHtml(data.question)}"><i class="fa-solid fa-volume-high"></i></i></button>
             </div>
             <div class="inner-card-back">
-                <p style="font-size:1.5rem">${data.answer}</p>
-                <button class="voice-btn back-voice" data-text="${data.answer}"><i class="fa-solid fa-volume-high"></i></button>
+                <div class="inner-card-content">
+                    ${backImageHtml}
+                    <p style="font-size:1.5rem">${escapeHtml(data.answer)}</p>
+                </div>
+                <button class="voice-btn back-voice" data-text="${escapeHtml(data.answer)}"><i class="fa-solid fa-volume-high"></i></button>
             </div>
         </div>
     `;
@@ -71,25 +120,41 @@ function createCard(data, index) {
     updateCurrentText();
 }
 
-// Hàm gọi API để đọc văn bản
-async function speakText(text) {
-    try {
-        const response = await fetch('/api/tts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: text })
-        });
+function detectSpeechLang(text) {
+    if (/[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(text)) return "ja-JP";
+    if (/[\uac00-\ud7af]/.test(text)) return "ko-KR";
+    if (/[\u0e00-\u0e7f]/.test(text)) return "th-TH";
+    if (/[ăâđêôơưáàảãạắằẳẵặấầẩẫậéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]/i.test(text)) return "vi-VN";
+    return "en-US";
+}
 
-        if (!response.ok) throw new Error('Lỗi khi gọi API TTS');
+function pickVoice(lang) {
+    const voices = window.speechSynthesis.getVoices();
+    return voices.find(voice => voice.lang === lang)
+        || voices.find(voice => voice.lang && voice.lang.startsWith(lang.split("-")[0]))
+        || null;
+}
 
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const audio = new Audio(url);
-        audio.play();
-    } catch (error) {
-        console.error('Error playing audio:', error);
-        alert('Không thể đọc được nội dung. Vui lòng thử lại.');
+// Hàm đọc văn bản bằng TTS của trình duyệt
+function speakText(text) {
+    const speechText = String(text || "").trim();
+    if (!speechText) return;
+
+    if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
+        alert("Trình duyệt không hỗ trợ đọc văn bản.");
+        return;
     }
+
+    window.speechSynthesis.cancel();
+
+    const lang = detectSpeechLang(speechText);
+    const utterance = new SpeechSynthesisUtterance(speechText);
+    utterance.lang = lang;
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    utterance.voice = pickVoice(lang);
+
+    window.speechSynthesis.speak(utterance);
 }
 function updateCurrentText() {
     currentElement.innerText = `${currentActiveCard + 1}/${cardsElement.length}`;
@@ -97,6 +162,7 @@ function updateCurrentText() {
 
 // Chuyển card tiếp theo
 nextButton.addEventListener("click", () => {
+    if (cardsElement.length === 0) return;
     cardsElement[currentActiveCard].className = "card left";
     currentActiveCard++;
     if (currentActiveCard > cardsElement.length - 1) {
@@ -108,6 +174,7 @@ nextButton.addEventListener("click", () => {
 
 // Chuyển card trước đó
 prevButton.addEventListener("click", () => {
+    if (cardsElement.length === 0) return;
     cardsElement[currentActiveCard].className = "card right";
     currentActiveCard--;
     if (currentActiveCard < 0) {
@@ -125,6 +192,8 @@ hideButton.addEventListener("click", () => {
     addContainer.classList.remove("show");
     document.getElementById("question").value = "";
     document.getElementById("answer").value = "";
+    document.getElementById("previewUrl").value = "";
+    document.getElementById("image-search-panel").innerHTML = "";
     location.reload();
 });
 
@@ -149,12 +218,23 @@ shuffleButton.addEventListener("click", () => {
 });
 
 // Khởi tạo các card từ dữ liệu BE
+updateImageModeButtons();
 createCards();
+
+imageModeButtons.forEach(button => {
+    button.addEventListener("click", () => {
+        imageDisplayMode = button.dataset.imageMode;
+        localStorage.setItem(imageModeStorageKey, imageDisplayMode);
+        updateImageModeButtons();
+        createCards();
+    });
+});
 
 // Thêm card mới
 document.getElementById("add-card").addEventListener("click", async () => {
     const vocabulary = document.getElementById("question").value.trim();
     const meaning = document.getElementById("answer").value.trim();
+    const previewUrl = document.getElementById("previewUrl").value.trim();
     const flashCardId = flashcard._id;
 
     if (!vocabulary || !meaning) {
@@ -168,7 +248,7 @@ document.getElementById("add-card").addEventListener("click", async () => {
                 "Content-Type": "application/json",
                 "Accept": "application/json",
             },
-            body: JSON.stringify({ vocabulary, meaning }),
+            body: JSON.stringify({ vocabulary, meaning, previewUrl }),
         });
 
         if (!response.ok) {
@@ -181,10 +261,88 @@ document.getElementById("add-card").addEventListener("click", async () => {
         setTimeout(() => {
             alertMessage.innerText = "";
         }, 2000);
-        // Tải lại trang để cập nhật danh sách thẻ
+
+        const newCard = { vocabulary, meaning, previewUrl };
+        listCard.push(newCard);
+        cardsData.push({
+            question: isReversed ? meaning : vocabulary,
+            answer: isReversed ? vocabulary : meaning,
+            previewUrl,
+        });
+        currentActiveCard = cardsData.length - 1;
+        createCards();
+        document.getElementById("question").value = "";
+        document.getElementById("answer").value = "";
+        previewUrlInput.value = "";
+        imageSearchPanel.innerHTML = "";
     } catch (error) {
         console.error("Lỗi khi thêm thẻ:", error);
     }
+});
+
+const previewUrlInput = document.getElementById("previewUrl");
+const searchCardImageButton = document.getElementById("search-card-image");
+const imageSearchPanel = document.getElementById("image-search-panel");
+
+function renderSelectedImage(url) {
+    if (!url) {
+        imageSearchPanel.innerHTML = "";
+        return;
+    }
+
+    imageSearchPanel.innerHTML = `
+        <div class="selected-image-preview">
+            <img src="${escapeHtml(url)}" alt="Ảnh flashcard đã chọn" loading="lazy">
+            <span>Ảnh đã chọn</span>
+        </div>
+    `;
+}
+
+previewUrlInput.addEventListener("input", () => renderSelectedImage(previewUrlInput.value.trim()));
+
+searchCardImageButton.addEventListener("click", async () => {
+    const query = document.getElementById("question").value.trim();
+    if (!query) {
+        imageSearchPanel.innerHTML = '<p class="image-search-message">Nhập câu hỏi trước để tìm ảnh.</p>';
+        return;
+    }
+
+    imageSearchPanel.innerHTML = '<p class="image-search-message">Đang tìm ảnh...</p>';
+
+    try {
+        const response = await fetch(`/flashcards/image-search?q=${encodeURIComponent(query)}&num=8`);
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Không thể tìm ảnh");
+        }
+
+        const images = data.items || [];
+        if (!images.length) {
+            imageSearchPanel.innerHTML = '<p class="image-search-message">Không tìm thấy ảnh phù hợp.</p>';
+            return;
+        }
+
+        imageSearchPanel.innerHTML = `
+            <div class="image-result-grid">
+                ${images.map((image) => `
+                    <button type="button" class="image-result-item" data-image-url="${escapeHtml(image.imageUrl)}" title="${escapeHtml(image.title)}">
+                        <img src="${escapeHtml(image.thumbnailUrl || image.imageUrl)}" alt="${escapeHtml(image.title || 'Ảnh flashcard')}" loading="lazy">
+                    </button>
+                `).join("")}
+            </div>
+        `;
+    } catch (error) {
+        imageSearchPanel.innerHTML = `<p class="image-search-message">${escapeHtml(error.message || "Không thể tìm ảnh lúc này")}</p>`;
+    }
+});
+
+imageSearchPanel.addEventListener("click", (event) => {
+    const imageButton = event.target.closest(".image-result-item");
+    if (!imageButton) return;
+
+    previewUrlInput.value = imageButton.dataset.imageUrl;
+    renderSelectedImage(previewUrlInput.value);
 });
 
 $(document).ready(function () {
@@ -288,7 +446,8 @@ document.getElementById("reverse").addEventListener("click", () => {
 
     cardsData = listCard.map(card => ({
         question: isReversed ? card.meaning : card.vocabulary,
-        answer: isReversed ? card.vocabulary : card.meaning
+        answer: isReversed ? card.vocabulary : card.meaning,
+        previewUrl: card.previewUrl || ''
     }));
 
     createCards();

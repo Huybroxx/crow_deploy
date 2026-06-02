@@ -1,6 +1,88 @@
 
 import User from '../models/user.model.js';
 import FlashCard from '../models/flash-card.model.js';
+import axios from 'axios';
+
+const SERPER_IMAGES_URL = 'https://google.serper.dev/images';
+const PREFERRED_IMAGE_SITE = 'www.irasutoya.com';
+
+const normalizeImageUrl = (value) => {
+    const url = String(value || '').trim();
+    if (!url) return '';
+
+    try {
+        const parsed = new URL(url);
+        return ['http:', 'https:'].includes(parsed.protocol) ? url : '';
+    } catch (error) {
+        return '';
+    }
+};
+
+const parseSelectedImages = (value) => {
+    if (!value) return {};
+
+    try {
+        const parsed = JSON.parse(value);
+        return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (error) {
+        return {};
+    }
+};
+
+const parseCardLine = (line, index, selectedImages = {}) => {
+    const trimmedLine = String(line || '').trim();
+    if (!trimmedLine) return null;
+
+    let parts = trimmedLine.includes('|')
+        ? trimmedLine.split('|').map(item => item.trim())
+        : trimmedLine.split(/\s+-\s+/).map(item => item.trim());
+
+    if (parts.length < 2) {
+        parts = trimmedLine.split('-').map(item => item.trim());
+    }
+
+    const [vocabulary, meaning, ...imageParts] = parts;
+    const selectedImage = selectedImages[`card-${index}`];
+    const previewUrl = normalizeImageUrl(imageParts.join(' - ') || selectedImage);
+
+    if (!vocabulary || !meaning) return null;
+
+    return { vocabulary, meaning, previewUrl };
+};
+
+const parseCardsText = (cardsText, selectedImages = {}) => {
+    if (!cardsText) return [];
+
+    return cardsText
+        .trim()
+        .split('\n')
+        .map((line, index) => parseCardLine(line, index, selectedImages))
+        .filter(Boolean);
+};
+
+const mapSerperImages = (images = []) => images.map(img => ({
+    imageUrl: img.imageUrl || '',
+    thumbnailUrl: img.thumbnailUrl || img.imageUrl || '',
+    title: img.title || '',
+    width: img.imageWidth || img.width || 0,
+    height: img.imageHeight || img.height || 0,
+})).filter(img => img.imageUrl);
+
+const fetchSerperImages = async ({ query, num, apiKey }) => {
+    const response = await axios.post(
+        SERPER_IMAGES_URL,
+        { q: query, num },
+        {
+            headers: {
+                'X-API-KEY': apiKey,
+                'Content-Type': 'application/json',
+            },
+            timeout: 10000,
+        }
+    );
+
+    return mapSerperImages(Array.isArray(response.data?.images) ? response.data.images : []);
+};
 
 //flashcards
 export const getflashcards = async (req, res) => {
@@ -21,11 +103,12 @@ export const newCard = async (req, res) => {
         const user = res.locals.user;
         const id = req.params.id;
         const { vocabulary, meaning } = req.body;
+        const previewUrl = normalizeImageUrl(req.body.previewUrl);
         const flashCard = await FlashCard.findOne({ _id: id, user: user._id });
         if (!flashCard) {
             throw new Error('Không tìm thấy bộ thẻ!');
         }
-        flashCard.cards.push({ vocabulary, meaning });
+        flashCard.cards.push({ vocabulary, meaning, previewUrl });
         await flashCard.save();
         req.flash('success', 'Thêm thẻ thành công!');
         return res.status(200).json({ message: 'Thêm thẻ thành công!' });
@@ -57,7 +140,8 @@ export const getCreateCard = (req, res) => {
     res.render('./page/flashcards/createCard', {
         title: 'Tạo bộ thẻ mới',
         name: '',
-        cardsText: ''
+        cardsText: '',
+        selectedImages: '{}'
     });
 };
 
@@ -65,14 +149,8 @@ export const postCreateCard = async (req, res) => {
     try {
         const user = res.locals.user;
         const { name, cardsText } = req.body;
-        let cards = [];
-
-        if (cardsText) {
-            cards = cardsText.trim().split('\n').map(line => {
-                const [vocabulary, meaning] = line.split('-').map(item => item.trim());
-                return { vocabulary, meaning };
-            }).filter(card => card.vocabulary && card.meaning);
-        }
+        const selectedImages = parseSelectedImages(req.body.selectedImages);
+        const cards = parseCardsText(cardsText, selectedImages);
 
         if (!name || cards.length === 0) {
             throw new Error('Vui lòng nhập tên bộ thẻ và ít nhất một thẻ hợp lệ!');
@@ -92,8 +170,39 @@ export const postCreateCard = async (req, res) => {
         res.render('./page/flashcards/createCard', {
             title: 'Tạo bộ thẻ mới',
             name: req.body.name || '',
-            cardsText: req.body.cardsText || ''
+            cardsText: req.body.cardsText || '',
+            selectedImages: req.body.selectedImages || '{}'
         });
+    }
+};
+
+export const searchFlashcardImages = async (req, res) => {
+    try {
+        const query = String(req.query.q || '').trim();
+        const num = Math.min(Math.max(Number(req.query.num) || 8, 1), 10);
+        const apiKey = process.env.SERPER_API_KEY;
+
+        if (!query) {
+            return res.status(400).json({ error: 'Thiếu từ khóa tìm ảnh' });
+        }
+
+        if (!apiKey) {
+            return res.status(500).json({ error: 'Chưa cấu hình SERPER_API_KEY' });
+        }
+
+        const siteQuery = `${query} site:${PREFERRED_IMAGE_SITE}`;
+        let items = await fetchSerperImages({ query: siteQuery, num, apiKey });
+        let source = 'preferred_site';
+
+        if (items.length === 0) {
+            items = await fetchSerperImages({ query, num, apiKey });
+            source = 'web';
+        }
+
+        return res.status(200).json({ items, source, preferredSite: PREFERRED_IMAGE_SITE });
+    } catch (error) {
+        console.error('Lỗi khi tìm ảnh Serper:', error.message);
+        return res.status(500).json({ error: 'Không thể tìm ảnh lúc này' });
     }
 };
 

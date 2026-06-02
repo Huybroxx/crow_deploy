@@ -30,6 +30,21 @@ block style
         td.vocab {
             background-color:rgb(255, 249, 242); /* cam lợt */
         }
+        .list-card-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .list-card-thumb {
+            width: 54px;
+            height: 54px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid #ffd6a1;
+            background: #fff7ef;
+        }
 
         /* Nghĩa: cam nhạt hơn */
         td.meaning {
@@ -74,10 +89,18 @@ block main
                     tbody
                     - for (let i = 0; i < flashCard.cards.length; i += 2)
                         tr
-                            td.vocab #{flashCard.cards[i].vocabulary}
+                            td.vocab
+                                .list-card-cell
+                                    if flashCard.cards[i].previewUrl
+                                        img.list-card-thumb(src=flashCard.cards[i].previewUrl alt=flashCard.cards[i].vocabulary)
+                                    span #{flashCard.cards[i].vocabulary}
                             td.meaning #{flashCard.cards[i].meaning}
                             if flashCard.cards[i + 1]
-                                td.vocab #{flashCard.cards[i + 1].vocabulary}
+                                td.vocab
+                                    .list-card-cell
+                                        if flashCard.cards[i + 1].previewUrl
+                                            img.list-card-thumb(src=flashCard.cards[i + 1].previewUrl alt=flashCard.cards[i + 1].vocabulary)
+                                        span #{flashCard.cards[i + 1].vocabulary}
                                 td.meaning #{flashCard.cards[i + 1].meaning}
                             else
                                 td.vocab(colspan="2")

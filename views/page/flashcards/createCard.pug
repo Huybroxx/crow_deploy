@@ -14,28 +14,35 @@ block main
             h2.mb-4.text-center Tạo Bộ Thẻ Học Tập Mới
 
             form(action="/flashcards/createCard" method="POST")
+                input#selectedImages(type="hidden" name="selectedImages" value=selectedImages)
                 .form-group
                     label(for="name") Tên bộ thẻ
                     input#name.form-control(type="text" name="name" value=name required placeholder="Nhập tên bộ thẻ (ví dụ: Từ vựng tiếng Anh cơ bản)")
 
                 .form-group
                     label(for="cardsText") Nội dung thẻ (mỗi dòng một thẻ)
-                    textarea#cardsText.form-control(name="cardsText" rows="8" placeholder="Nhập các thẻ theo định dạng: từ vựng - nghĩa" value=cardsText)
+                    textarea#cardsText.form-control(name="cardsText" rows="8" placeholder="Nhập các thẻ theo định dạng: từ vựng - nghĩa - URL ảnh (tùy chọn)")= cardsText
                     .input-guide
                         p.mb-2 Hướng dẫn nhập liệu:
                         ul
                             li Mỗi dòng là một thẻ học tập
-                            li Sử dụng dấu "-" để phân tách từ vựng và nghĩa
+                            li Sử dụng dấu "-" hoặc "|" để phân tách từ vựng, nghĩa và URL ảnh tùy chọn
+                            li Ảnh được tìm ưu tiên trên Irasutoya; nếu không có kết quả mới tìm rộng trên web
+                            li Có thể bấm "Tìm ảnh" từng thẻ hoặc "Tìm ảnh tất cả" để tự chọn ảnh đầu tiên cho các thẻ còn thiếu
                             li Ví dụ:
                                 pre.
                                     hello - xin chào
-                                    goodbye - tạm biệt
+                                    goodbye | tạm biệt | https://example.com/goodbye.jpg
                                     thanks - cảm ơn
 
                 .card-preview#cardPreview
                     p.text-muted.text-center Chưa có thẻ nào được nhập
 
-                .card-count#cardCount 0 thẻ
+                .preview-summary
+                    .card-count#cardCount 0 thẻ
+                    button.btn-search-all#searchAllImages(type="button")
+                        i.fas.fa-images
+                        |  Tìm ảnh tất cả
 
                 .text-center.mt-4
                     button.btn.btn-create(type="submit") Tạo Bộ Thẻ

@@ -16,6 +16,10 @@ const flashCardSchema = new mongoose.Schema({
                 type: String,
                 required: true,
             },
+            previewUrl: {
+                type: String,
+                default: '',
+            },
         }
     ],
     user: {

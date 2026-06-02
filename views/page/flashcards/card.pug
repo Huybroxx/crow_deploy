@@ -18,7 +18,17 @@ block main
                 |  Trộn thẻ
             button#reverse.clear.btn.btn-custom
                 i.fas.fa-retweet.mr-2
-                |  Đảo 
+                |  Đảo
+            .image-mode-toggle(role="group" aria-label="Chế độ hiển thị ảnh")
+                button.image-mode-btn(type="button" data-image-mode="front" title="Hiện ảnh ở mặt trước")
+                    i.fas.fa-image
+                    |  Trước
+                button.image-mode-btn(type="button" data-image-mode="back" title="Hiện ảnh ở mặt sau")
+                    i.fas.fa-reply
+                    |  Sau
+                button.image-mode-btn(type="button" data-image-mode="both" title="Hiện ảnh ở cả hai mặt")
+                    i.fas.fa-images
+                    |  Cả hai
 
         h1
             | Thẻ [#{flashCard.name}]
@@ -44,6 +54,14 @@ block main
             .form-group
                 label(for='meaning') Trả lời
                 textarea#answer(placeholder='Nhập câu trả lời...')
+            .form-group.image-form-group
+                label(for='previewUrl') Hình ảnh
+                input#previewUrl(type='url' placeholder='Dán URL ảnh hoặc chọn từ Serper...')
+                .image-search-actions
+                    button#search-card-image.btn.btn-margin.btn-custom(type='button')
+                        i.fas.fa-magnifying-glass.mr-2
+                        |  Tìm ảnh
+                #image-search-panel.image-search-panel
             .button-group
                 button#AI-gen.btn.btn-margin.btn-custom
                     i.fas.fa-robot.mr-2

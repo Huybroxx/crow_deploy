@@ -23,9 +23,11 @@ block main
 
             if (flashCardSets && flashCardSets.length > 0)
                 each flashcard in flashCardSets
+                    - const coverCard = flashcard.cards ? flashcard.cards.find(card => card.previewUrl) : null
+                    - const coverImage = coverCard ? coverCard.previewUrl : './img/course-1.png'
                     .card.course-card
                         .content
-                            img(src="./img/course-1.png" alt="hình ảnh thẻ ghi nhớ")
+                            img(src=coverImage alt="hình ảnh thẻ ghi nhớ")
                             h2 #{flashcard.name}
                             p #{flashcard.cards ? flashcard.cards.length : 0} thẻ
                             p Tạo lúc: #{new Date(flashcard.createdAt).toLocaleDateString("vi-VN")}
