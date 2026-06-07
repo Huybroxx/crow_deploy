@@ -157,6 +157,21 @@ h1 button {
   height: 18.75rem;
 }
 
+.empty-card-message {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed rgba(71, 50, 24, 0.28);
+  border-radius: 0.625rem;
+  background: rgba(255, 255, 255, 0.72);
+  color: #5b4b38;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+}
+
 .card {
   background-color: var(--light-color);
   border-radius: 25px;
@@ -252,6 +267,44 @@ h1 button {
   font-weight: bold;
   font-size: 1rem;
   color: var(--background-color);
+}
+
+.difficult-card-btn {
+  position: absolute;
+  top: 0.55rem;
+  left: 0.55rem;
+  z-index: 4;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #9aa8b7;
+  cursor: pointer;
+  font-size: 0.78rem;
+  opacity: 0.62;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  transition: color 0.2s ease, background 0.2s ease, opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.difficult-card-btn:hover,
+.difficult-card-btn.active {
+  opacity: 1;
+  color: #fff;
+  background: #ff9f2f;
+}
+
+.difficult-card-btn:hover {
+  transform: translateY(-1px);
+}
+
+.difficult-card-btn:disabled {
+  cursor: wait;
+  opacity: 0.45;
 }
 
 .navigation {
@@ -612,13 +665,17 @@ h1 button {
   position: absolute;
   margin: auto;
   width: 100%;
-  max-width: 400px;
+  max-width: 540px;
   height: 100%;
-  max-height: 180px;
+  max-height: 190px;
   display: flex;
   align-items: center;
   background-image: linear-gradient(90deg, #4696ff 0%, #a6cdff 100%);
   justify-content: space-evenly;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 18px;
+  box-sizing: border-box;
   border-radius: 25px 0 25px 25px;
   border: none;
   box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,

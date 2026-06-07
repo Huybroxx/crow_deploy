@@ -12,6 +12,9 @@ const alertMessage = document.getElementById("alert");
 const cardData = document.querySelector(".card-data");
 const flashcard = JSON.parse(cardData.getAttribute("data"));
 const listCard = flashcard.cards;
+listCard.forEach(card => {
+    card.isDifficult = false;
+});
 const imageModeButtons = document.querySelectorAll(".image-mode-btn");
 const IMAGE_DISPLAY_MODES = ["front", "back", "both"];
 const imageModeStorageKey = `flashcard-image-display-mode-${flashcard._id}`;
@@ -42,13 +45,28 @@ function getImageSearchQuery(card) {
 }
 
 let isReversed = false;
+let isDifficultMode = false;
 
 // Chuyển đổi dữ liệu từ BE thành { question, answer }
-let cardsData = listCard.map(card => ({
-    question: card.vocabulary,
-    answer: card.meaning,
-    previewUrl: card.previewUrl || ''
-}));
+function getCardId(card) {
+    return String(card?._id || card?.id || "");
+}
+
+function mapCardToStudyData(card) {
+    return {
+        id: getCardId(card),
+        question: isReversed ? card.meaning : card.vocabulary,
+        answer: isReversed ? card.vocabulary : card.meaning,
+        previewUrl: card.previewUrl || '',
+        isDifficult: Boolean(card.isDifficult),
+    };
+}
+
+function getVisibleSourceCards() {
+    return isDifficultMode ? listCard.filter(card => card.isDifficult) : listCard;
+}
+
+let cardsData = getVisibleSourceCards().map(card => mapCardToStudyData(card));
 let currentActiveCard = 0;
 let cardsElement = [];
 
@@ -71,12 +89,63 @@ function updateImageModeButtons() {
     });
 }
 
+function updateDifficultButtonState(button, isDifficult) {
+    button.classList.toggle("active", isDifficult);
+    button.setAttribute("aria-pressed", isDifficult ? "true" : "false");
+    button.setAttribute("title", isDifficult ? "Bỏ đánh dấu khó thuộc" : "Đánh dấu thẻ khó thuộc");
+    button.setAttribute("aria-label", isDifficult ? "Bỏ đánh dấu khó thuộc" : "Đánh dấu thẻ khó thuộc");
+}
+
+function refreshVisibleCards(preferredCardId = "") {
+    cardsData = getVisibleSourceCards().map(card => mapCardToStudyData(card));
+
+    if (preferredCardId) {
+        const preferredIndex = cardsData.findIndex(card => card.id === preferredCardId);
+        currentActiveCard = preferredIndex === -1 ? 0 : preferredIndex;
+    }
+
+    if (currentActiveCard < 0 || currentActiveCard >= cardsData.length) {
+        currentActiveCard = 0;
+    }
+
+    createCards();
+}
+
+function toggleDifficultCard(data, button) {
+    const sourceCard = listCard.find(card => getCardId(card) === data.id);
+    if (!sourceCard) return;
+
+    sourceCard.isDifficult = !sourceCard.isDifficult;
+    data.isDifficult = sourceCard.isDifficult;
+    updateDifficultButtonState(button, data.isDifficult);
+
+    if (isDifficultMode && !sourceCard.isDifficult) {
+        refreshVisibleCards();
+    }
+}
+
+function showDifficultCards() {
+    isDifficultMode = true;
+    currentActiveCard = 0;
+    refreshVisibleCards();
+
+    const choiseContainer = document.getElementById("choise-container");
+    if (choiseContainer) {
+        choiseContainer.classList.remove("show");
+    }
+}
+
 // Tạo các card từ dữ liệu BE
 function createCards() {
     cardsContainer.innerHTML = ""; // Xóa danh sách cũ
     cardsElement = []; // Xóa danh sách phần tử cũ
     if (cardsData.length === 0) {
         currentElement.innerText = "0/0";
+        cardsContainer.innerHTML = `
+            <div class="empty-card-message">
+                ${isDifficultMode ? "Chưa có thẻ khó thuộc nào." : "Chưa có thẻ nào."}
+            </div>
+        `;
         return;
     }
 
@@ -91,6 +160,8 @@ function createCard(data, index) {
     if (index === currentActiveCard) card.classList.add("active");
     const frontImageHtml = getImageHtml(data, "front");
     const backImageHtml = getImageHtml(data, "back");
+    const difficultButtonClass = data.isDifficult ? " active" : "";
+    const difficultButtonLabel = data.isDifficult ? "Bỏ đánh dấu khó thuộc" : "Đánh dấu thẻ khó thuộc";
     card.innerHTML = `
         <div class="inner-card card-animation">
             <div class="inner-card-front">
@@ -108,8 +179,17 @@ function createCard(data, index) {
                 <button class="voice-btn back-voice" data-text="${escapeHtml(data.answer)}"><i class="fa-solid fa-volume-high"></i></button>
             </div>
         </div>
+        <button class="difficult-card-btn${difficultButtonClass}" type="button" data-card-id="${escapeHtml(data.id)}" title="${escapeHtml(difficultButtonLabel)}" aria-label="${escapeHtml(difficultButtonLabel)}" aria-pressed="${data.isDifficult ? "true" : "false"}">
+            <i class="fa-solid fa-flag"></i>
+        </button>
     `;
     card.addEventListener("click", () => card.classList.toggle("show-answer"));
+
+    const difficultButton = card.querySelector(".difficult-card-btn");
+    difficultButton.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleDifficultCard(data, difficultButton);
+    });
 
     // Thêm sự kiện cho nút Voice trên mặt trước
     const frontVoiceBtn = card.querySelector(".front-voice");
@@ -267,22 +347,17 @@ document.getElementById("add-card").addEventListener("click", async () => {
             throw new Error("Lỗi khi gửi dữ liệu");
         }
 
-        const data = await response.json();
-        console.log(data.message); // Kiểm tra phản hồi từ server
-        alertMessage.innerText = data.message;
+        const responseData = await response.json();
+        console.log(responseData.message); // Kiểm tra phản hồi từ server
+        alertMessage.innerText = responseData.message;
         setTimeout(() => {
             alertMessage.innerText = "";
         }, 2000);
 
-        const newCard = { vocabulary, meaning, previewUrl };
+        const newCard = responseData.card || { vocabulary, meaning, previewUrl };
+        newCard.isDifficult = false;
         listCard.push(newCard);
-        cardsData.push({
-            question: isReversed ? meaning : vocabulary,
-            answer: isReversed ? vocabulary : meaning,
-            previewUrl,
-        });
-        currentActiveCard = cardsData.length - 1;
-        createCards();
+        refreshVisibleCards(getCardId(newCard));
         document.getElementById("question").value = "";
         document.getElementById("answer").value = "";
         previewUrlInput.value = "";
@@ -424,12 +499,14 @@ $(document).ready(function () {
     const learnBtn = document.getElementById('learn');
     const choiseContainer = document.getElementById('choise-container');
     const closeBtn = document.getElementById('closex');
+    const difficultReviewBtn = document.getElementById('difficult-review');
     if (learnBtn && choiseContainer) {
         learnBtn.addEventListener('click', () => { choiseContainer.classList.add('show') });
     } else {
         console.log('Không tìm thấy phần tử');
     }
     closeBtn.addEventListener('click', () => { choiseContainer.classList.remove('show') });
+    difficultReviewBtn?.addEventListener('click', showDifficultCards);
 
 });
 
@@ -457,14 +534,9 @@ document.addEventListener('keydown', (e) => {
 
 
 document.getElementById("reverse").addEventListener("click", () => {
+    const currentCardId = cardsData[currentActiveCard]?.id || "";
     isReversed = !isReversed;
 
-    cardsData = listCard.map(card => ({
-        question: isReversed ? card.meaning : card.vocabulary,
-        answer: isReversed ? card.vocabulary : card.meaning,
-        previewUrl: card.previewUrl || ''
-    }));
-
-    createCards();
+    refreshVisibleCards(currentCardId);
 });
 

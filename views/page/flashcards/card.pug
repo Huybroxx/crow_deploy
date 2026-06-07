@@ -6,6 +6,8 @@ block style
     link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css")
     link(rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css")
 block main
+    +alert-success(5000)
+    +alert-error(5000)
     if(flashCard)
         .card-data(data=JSON.stringify(flashCard))
     .container
@@ -86,6 +88,9 @@ block main
             a#AI-gen-exercise.btn.btn-custom(href='/review/' + flashCard._id)
                 i.fas.fa-graduation-cap.mr-2
                 |  Bài tập điền từ
+            button#difficult-review.btn.btn-custom(type='button' title='Ôn lại bộ thẻ khó thuộc')
+                i.fas.fa-flag.mr-2
+                |  Ôn thẻ khó
             a#AI-gen-quiz.btn.btn-custom(href='/AI-gen-quiz/' + flashCard._id)
                 i.fas.fa-graduation-cap.mr-2
                 |  Bài tập trắc nghiệm

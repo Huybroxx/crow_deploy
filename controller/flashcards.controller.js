@@ -109,11 +109,37 @@ const fetchSerperImages = async ({ query, num, apiKey }) => {
     return mapSerperImages(Array.isArray(response.data?.images) ? response.data.images : []);
 };
 
+const buildReviewQuiz = (cards = []) => {
+    const cardsData = cards.map(card => ({
+        vocabulary: card.vocabulary,
+        meaning: card.meaning
+    }));
+
+    for (let i = cardsData.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cardsData[i], cardsData[j]] = [cardsData[j], cardsData[i]];
+    }
+
+    const half = Math.ceil(cardsData.length / 2);
+    const group1 = cardsData.slice(0, half).map(card => ({
+        question: card.vocabulary,
+        answer: card.meaning,
+        mode: 'vocab-to-meaning'
+    }));
+    const group2 = cardsData.slice(half).map(card => ({
+        question: card.meaning,
+        answer: card.vocabulary,
+        mode: 'meaning-to-vocab'
+    }));
+
+    return [...group1, ...group2];
+};
+
 //flashcards
 export const getflashcards = async (req, res) => {
     try {
         const user = res.locals.user;
-        const flashCardSets = await FlashCard.find({ user: user._id });
+        const flashCardSets = await FlashCard.find({ user: user._id }).sort({ createdAt: -1 });
         res.render('./page/flashcards/index', {
             title: 'Thẻ học tập',
             flashCardSets,
@@ -134,13 +160,16 @@ export const newCard = async (req, res) => {
             throw new Error('Không tìm thấy bộ thẻ!');
         }
         flashCard.cards.push({ vocabulary, meaning, previewUrl });
+        const addedCard = flashCard.cards[flashCard.cards.length - 1];
         await flashCard.save();
         req.flash('success', 'Thêm thẻ thành công!');
-        return res.status(200).json({ message: 'Thêm thẻ thành công!' });
+        return res.status(200).json({ message: 'Thêm thẻ thành công!', card: addedCard });
     } catch (error) {
-
+        console.error('Lỗi khi thêm thẻ:', error);
+        return res.status(500).json({ error: 'Không thể thêm thẻ lúc này' });
     }
 }
+
 //thẻ học tập chi tiết
 export const getflashcardDetail = async (req, res) => {
 
@@ -332,42 +361,15 @@ export const deleteFlashCard = async (req, res) => {
 export const baiTapTuVung = async (req, res) => {
     const { id } = req.params;
     try {
-        const flashcard = await FlashCard.findById(id);
+        const user = res.locals.user;
+        const flashcard = await FlashCard.findOne({ _id: id, user: user._id });
         if (!flashcard) {
             req.flash('error', 'Không tìm thấy bộ flashcard');
             return res.redirect('/flashcards');
         }
-        // Lấy danh sách các card
-        let cardsData = flashcard.cards.map(card => ({
-            vocabulary: card.vocabulary,
-            meaning: card.meaning
-        }));
 
-        // Xáo trộn mảng cardsData
-        for (let i = cardsData.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [cardsData[i], cardsData[j]] = [cardsData[j], cardsData[i]];
-        }
+        const quiz = buildReviewQuiz(flashcard.cards);
 
-        // Nếu số thẻ không chia đôi, chúng ta chia theo số lượng tối đa chẵn
-        const half = Math.floor(cardsData.length / 2);
-
-        // 5 thẻ đầu: câu hỏi là vocabulary, người dùng nhập meaning
-        const group1 = cardsData.slice(0, half).map(card => ({
-            question: card.vocabulary,
-            answer: card.meaning,
-            mode: 'vocab-to-meaning'
-        }));
-
-        // 5 thẻ tiếp theo: câu hỏi là meaning, người dùng nhập vocabulary
-        const group2 = cardsData.slice(half, half * 2).map(card => ({
-            question: card.meaning,
-            answer: card.vocabulary,
-            mode: 'meaning-to-vocab'
-        }));
-
-        // Gộp 2 nhóm lại thành 1 mảng quiz
-        const quiz = [...group1, ...group2];
         req.flash('success', 'Bắt đầu bài ôn luyện!');
         return res.render('./page/flashcards/review', { quiz, flashcard });
     } catch (error) {
