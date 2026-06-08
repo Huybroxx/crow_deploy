@@ -1,3 +1,5 @@
+import { FlashcardDeckSpeaker, isSpeechSupported, stopBrowserSpeech } from "./tts.js";
+
 const deleteForms = document.querySelectorAll('form[action*="/flashcards/delete"]');
 
 deleteForms.forEach((form) => {
@@ -9,11 +11,91 @@ deleteForms.forEach((form) => {
     });
 });
 
+const listenButtons = document.querySelectorAll(".flashcard-listen-btn");
+let activeSpeaker = null;
+let activeButton = null;
+
+function parseButtonCards(button) {
+    try {
+        return JSON.parse(button.dataset.cards || "[]");
+    } catch (error) {
+        console.error("Không thể đọc dữ liệu bộ thẻ:", error);
+        return [];
+    }
+}
+
+function setListenButton(button, isPlaying) {
+    if (!button) return;
+
+    button.classList.toggle("is-playing", isPlaying);
+    button.innerHTML = isPlaying
+        ? '<i class="fas fa-stop"></i> Dừng'
+        : '<i class="fas fa-volume-high"></i> Nghe';
+}
+
+listenButtons.forEach((button) => {
+    button.disabled = !isSpeechSupported();
+
+    button.addEventListener("click", () => {
+        if (!isSpeechSupported()) {
+            alert("Trình duyệt này chưa hỗ trợ đọc bằng giọng nói.");
+            return;
+        }
+
+        if (activeSpeaker && activeButton === button && activeSpeaker.isPlaying) {
+            activeSpeaker.stop();
+            setListenButton(button, false);
+            activeSpeaker = null;
+            activeButton = null;
+            return;
+        }
+
+        if (activeSpeaker) {
+            activeSpeaker.stop();
+            setListenButton(activeButton, false);
+        }
+
+        const cards = parseButtonCards(button);
+
+        if (!cards.length) {
+            alert("Bộ thẻ này chưa có nội dung để đọc.");
+            return;
+        }
+
+        activeButton = button;
+        setListenButton(button, true);
+
+        activeSpeaker = new FlashcardDeckSpeaker(cards, {
+            rate: 1,
+            onDone: () => {
+                setListenButton(button, false);
+                activeSpeaker = null;
+                activeButton = null;
+            },
+            onStop: () => {
+                setListenButton(button, false);
+            },
+            onError: () => {
+                setListenButton(button, false);
+                alert("Không thể đọc bộ thẻ lúc này.");
+                activeSpeaker = null;
+                activeButton = null;
+            },
+        });
+
+        activeSpeaker.play(0);
+    });
+});
+
+window.addEventListener("beforeunload", stopBrowserSpeech);
+
 // Chọn section.flashcards
 const flashcardsSection = document.querySelector('section.flashcards');
 
 // Hàm tạo bong bóng ngẫu nhiên
 function createBubble() {
+    if (!flashcardsSection) return null;
+
     const bubble = document.createElement('div');
     bubble.classList.add('bubble');
 
@@ -38,12 +120,18 @@ function createBubble() {
 
 
 const bubbles = [];
-for (let i = 0; i < 10; i++) {
-    bubbles.push(createBubble());
+if (flashcardsSection) {
+    for (let i = 0; i < 10; i++) {
+        const bubble = createBubble();
+        if (bubble) {
+            bubbles.push(bubble);
+        }
+    }
 }
 
-
 function updateBubbles() {
+    if (!flashcardsSection) return;
+
     bubbles.forEach((bubble) => {
         let x = parseFloat(bubble.style.left);
         let y = parseFloat(bubble.style.top);

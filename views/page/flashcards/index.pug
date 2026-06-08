@@ -25,6 +25,7 @@ block main
                 each flashcard in flashCardSets
                     - const coverCard = flashcard.cards ? flashcard.cards.find(card => card.previewUrl) : null
                     - const coverImage = coverCard ? coverCard.previewUrl : './img/course-1.png'
+                    - const listenCards = (flashcard.cards || []).map(card => ({ vocabulary: card.vocabulary, meaning: card.meaning }))
                     .card.course-card
                         .content
                             img(src=coverImage alt="hình ảnh thẻ ghi nhớ")
@@ -34,6 +35,9 @@ block main
                             .control
                                 a(href=`/flashcards/card/${flashcard._id}`) Xem
                                 a(href=`/flashcards/list/${flashcard._id}`) List
+                                button.flashcard-listen-btn(type="button" data-cards=JSON.stringify(listenCards) data-title=flashcard.name aria-label=`Nghe bộ thẻ ${flashcard.name}`)
+                                    i.fas.fa-volume-high
+                                    |  Nghe
                                 a(href=`/flashcards/edit/${flashcard._id}`) Sửa
                                 form(action=`/flashcards/delete/${flashcard._id}?_method=DELETE` method="POST")
                                     button(type="submit" class="delete-card") Xóa

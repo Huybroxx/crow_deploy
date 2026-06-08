@@ -68,6 +68,52 @@ block style
             gap: 8px;
             flex-wrap: wrap;
         }
+        .flashcard-postcard-panel {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+            padding: 14px;
+            border: 1px solid #ffd6a1;
+            border-radius: 14px;
+            background: #fffaf4;
+            box-shadow: 0 10px 24px rgba(255, 169, 70, 0.14);
+        }
+        .flashcard-postcard-panel.is-open {
+            display: flex;
+        }
+        .postcard-info {
+            min-width: 220px;
+        }
+        .postcard-title {
+            margin: 0 0 4px;
+            color: #8a4f13;
+            font-size: 1rem;
+            font-weight: 800;
+        }
+        .postcard-status {
+            margin: 0;
+            color: #7b6b5b;
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+        .postcard-controls,
+        .postcard-speed {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .postcard-speed {
+            color: #8a4f13;
+            font-weight: 700;
+        }
+        .postcard-speed input {
+            width: 150px;
+            accent-color: #ffa94d;
+        }
         .list-control-btn,
         .list-layout-btn {
             min-height: 40px;
@@ -92,6 +138,11 @@ block style
             border-color: #ffa94d;
             background: linear-gradient(90deg, #ffa946 0%, #ffc07b 100%);
             box-shadow: 0 8px 18px rgba(255, 169, 70, 0.26);
+        }
+        .list-control-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.55;
+            transform: none;
         }
         .list-table-wrap {
             width: 100%;
@@ -188,6 +239,9 @@ block main
                         button#study-mode-toggle.list-control-btn(type="button" aria-pressed="false")
                             i.fas.fa-graduation-cap.mr-2
                             span.list-study-label Chế độ học
+                        button#postcard-toggle.list-control-btn(type="button" aria-expanded="false")
+                            i.fas.fa-volume-high.mr-2
+                            | Postcard
                     .flashcard-layout-toggle(role="group" aria-label="Chế độ hiển thị")
                         button.list-layout-btn(type="button" data-columns="1" aria-pressed="false")
                             i.fas.fa-list.mr-2
@@ -195,6 +249,27 @@ block main
                         button.list-layout-btn.active(type="button" data-columns="2" aria-pressed="true")
                             i.fas.fa-columns.mr-2
                             |  2 cột
+                .flashcard-postcard-panel#postcard-panel(aria-live="polite")
+                    .postcard-info
+                        p.postcard-title
+                            i.fas.fa-headphones.mr-2
+                            | Postcard đọc bộ thẻ
+                        p#postcard-status.postcard-status Sẵn sàng đọc #{cards.length} thẻ
+                    .postcard-controls
+                        button#postcard-play.list-control-btn(type="button")
+                            i.fas.fa-play.mr-2
+                            | Đọc từ đầu
+                        button#postcard-pause.list-control-btn(type="button")
+                            i.fas.fa-pause.mr-2
+                            | Tạm dừng
+                        button#postcard-stop.list-control-btn(type="button")
+                            i.fas.fa-stop.mr-2
+                            | Dừng
+                    label.postcard-speed(for="postcard-speed")
+                        i.fas.fa-gauge-high.mr-2
+                        | Tốc độ
+                        input#postcard-speed(type="range" min="0.5" max="1.8" step="0.1" value="1")
+                        span#postcard-speed-value 1.0x
                 .list-table-wrap
                     table#flashcard-list-table.table.table-bordered.table-striped.table-hover.text-center(data-columns="2")
                         thead.table-dark

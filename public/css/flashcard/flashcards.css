@@ -234,7 +234,10 @@ body {
 }
 .control a,
 .control button {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   padding: 6px 10px;
   background: var(--primary-color);
   color: #fff;
@@ -252,6 +255,16 @@ body {
 
 .control .delete-card {
   min-width: 48px;
+}
+
+.control .flashcard-listen-btn.is-playing {
+  background: #2f80ed;
+}
+
+.control .flashcard-listen-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
 }
 
 .control a:hover,
