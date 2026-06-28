@@ -304,6 +304,8 @@ h1 button {
 
 .card.known-card-reveal {
   transition: none;
+  transform-origin: center bottom;
+  animation: known-card-reveal 0.28s ease-out both;
 }
 
 @keyframes known-card-drop {
@@ -320,6 +322,18 @@ h1 button {
   100% {
     opacity: 0;
     transform: translate3d(0, 125vh, 0) rotateZ(10deg);
+  }
+}
+
+@keyframes known-card-reveal {
+  0% {
+    opacity: 0.62;
+    transform: translate3d(0, 18px, 0) scale(0.97);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
