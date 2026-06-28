@@ -184,6 +184,7 @@ export const getflashcardDetail = async (req, res) => {
         res.render('./page/flashcards/card', {
             title: "Thẻ " + flashCard.name,
             flashCard,
+            hideFooter: true,
         });
     } catch (error) {
         req.flash('error', 'Có lỗi khi tải bộ thẻ!');

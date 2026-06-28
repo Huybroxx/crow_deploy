@@ -34,7 +34,8 @@ html
         .main
           block main
 
-        include ../partial/footer.pug
+        if !hideFooter
+          include ../partial/footer.pug
 
       script(src="/js/index.js" type="module")
       script(src='/js/socket_client.js' type="module")
