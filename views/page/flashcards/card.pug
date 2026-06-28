@@ -27,6 +27,10 @@ block main
             button#sound-toggle.sound-toggle-btn(type="button" aria-pressed="true" title="Tắt âm thanh hiệu ứng")
                 i.fas.fa-volume-high
                 span Âm bật
+            .sound-volume-control(title="Âm lượng hiệu ứng")
+                i.fas.fa-volume-low
+                input#sound-volume(type="range" min="0" max="100" step="1" value="85" aria-label="Âm lượng hiệu ứng")
+                span#sound-volume-value 85%
             .image-mode-toggle(role="group" aria-label="Chế độ hiển thị ảnh")
                 button.image-mode-btn(type="button" data-image-mode="front" title="Hiện ảnh ở mặt trước")
                     i.fas.fa-image

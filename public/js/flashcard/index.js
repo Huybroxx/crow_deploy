@@ -9,6 +9,8 @@ const addContainer = document.getElementById("add-container");
 const shuffleButton = document.getElementById("random"); // Nút trộn thẻ
 const alertMessage = document.getElementById("alert");
 const soundToggleButton = document.getElementById("sound-toggle");
+const soundVolumeInput = document.getElementById("sound-volume");
+const soundVolumeValue = document.getElementById("sound-volume-value");
 // Lấy dữ liệu từ HTML (Pug đã render)
 const cardData = document.querySelector(".card-data");
 const flashcard = JSON.parse(cardData.getAttribute("data"));
@@ -50,6 +52,7 @@ const soundEffects = (() => {
     let context = null;
     let masterGain = null;
     let isEnabled = true;
+    let masterVolume = 0.9;
     const lastPlayedAt = new Map();
 
     function getContext() {
@@ -57,7 +60,7 @@ const soundEffects = (() => {
         if (!context) {
             context = new AudioContextClass();
             masterGain = context.createGain();
-            masterGain.gain.value = 0.45;
+            masterGain.gain.value = masterVolume;
             masterGain.connect(context.destination);
         }
 
@@ -167,6 +170,12 @@ const soundEffects = (() => {
         isEnabled() {
             return isEnabled;
         },
+        setVolume(value) {
+            masterVolume = Math.min(Math.max(Number(value) || 0, 0), 1.2);
+            if (masterGain && context) {
+                masterGain.gain.setTargetAtTime(masterVolume, context.currentTime, 0.015);
+            }
+        },
         flip() {
             if (!canPlay("flip", 140)) return;
             scheduleNoise({ duration: 0.028, gain: 0.035, frequency: 6200, endFrequency: 3600, filterType: "highpass", q: 0.7, startOffset: 0, release: 0.018 });
@@ -211,8 +220,15 @@ let isDifficultMode = false;
 let generatedCardId = 0;
 const knownCardIds = new Set();
 const soundStorageKey = "flashcard-sound-effects-enabled";
+const soundVolumeStorageKey = "flashcard-sound-effects-volume";
 let isSoundEnabled = localStorage.getItem(soundStorageKey) !== "false";
+let soundVolumePercent = Number(localStorage.getItem(soundVolumeStorageKey) || 85);
+if (!Number.isFinite(soundVolumePercent)) {
+    soundVolumePercent = 85;
+}
+soundVolumePercent = Math.min(Math.max(soundVolumePercent, 0), 100);
 soundEffects.setEnabled(isSoundEnabled);
+soundEffects.setVolume((soundVolumePercent / 100) * 1.2);
 
 // Chuyển đổi dữ liệu từ BE thành { question, answer }
 function getCardId(card) {
@@ -274,6 +290,17 @@ function updateSoundToggleButton() {
     soundToggleButton.innerHTML = isSoundEnabled
         ? '<i class="fas fa-volume-high"></i><span>Âm bật</span>'
         : '<i class="fas fa-volume-xmark"></i><span>Âm tắt</span>';
+}
+
+function updateSoundVolumeControl() {
+    if (soundVolumeInput) {
+        soundVolumeInput.value = String(soundVolumePercent);
+        soundVolumeInput.disabled = !isSoundEnabled;
+    }
+
+    if (soundVolumeValue) {
+        soundVolumeValue.innerText = `${soundVolumePercent}%`;
+    }
 }
 
 function updateDifficultButtonState(button, isDifficult) {
@@ -636,6 +663,7 @@ shuffleButton.addEventListener("click", () => {
 // Khởi tạo các card từ dữ liệu BE
 updateImageModeButtons();
 updateSoundToggleButton();
+updateSoundVolumeControl();
 createCards();
 
 soundToggleButton?.addEventListener("click", () => {
@@ -643,9 +671,24 @@ soundToggleButton?.addEventListener("click", () => {
     localStorage.setItem(soundStorageKey, isSoundEnabled ? "true" : "false");
     soundEffects.setEnabled(isSoundEnabled);
     updateSoundToggleButton();
+    updateSoundVolumeControl();
 
     if (isSoundEnabled) {
-        soundEffects.known();
+        soundEffects.flip();
+    }
+});
+
+soundVolumeInput?.addEventListener("input", () => {
+    const nextVolume = Number(soundVolumeInput.value);
+    soundVolumePercent = Number.isFinite(nextVolume) ? Math.min(Math.max(nextVolume, 0), 100) : 85;
+    localStorage.setItem(soundVolumeStorageKey, String(soundVolumePercent));
+    soundEffects.setVolume((soundVolumePercent / 100) * 1.2);
+    updateSoundVolumeControl();
+});
+
+soundVolumeInput?.addEventListener("change", () => {
+    if (isSoundEnabled) {
+        soundEffects.flip();
     }
 });
 
