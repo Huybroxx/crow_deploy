@@ -199,9 +199,11 @@ const soundEffects = (() => {
             scheduleNoise({ duration: 0.1, gain: 0.055, frequency: 180, filterType: "lowpass", q: 0.7, startOffset: 0.18, release: 0.08 });
         },
         move() {
-            if (!canPlay("move", 70)) return;
-            scheduleNoise({ duration: 0.045, gain: 0.025, frequency: 1100, q: 0.9 });
-            scheduleTone({ frequency: 360, duration: 0.045, gain: 0.018, type: "triangle", startOffset: 0.018 });
+            if (!canPlay("move", 85)) return;
+            scheduleNoise({ duration: 0.09, gain: 0.06, frequency: 4600, endFrequency: 1500, filterType: "bandpass", q: 0.8, attack: 0.002, release: 0.03 });
+            scheduleNoise({ duration: 0.055, gain: 0.038, frequency: 7200, endFrequency: 2600, filterType: "highpass", q: 0.55, startOffset: 0.025, attack: 0.001, release: 0.022 });
+            scheduleTone({ frequency: 880, endFrequency: 520, duration: 0.055, gain: 0.032, type: "triangle", startOffset: 0.072, attack: 0.002, release: 0.035 });
+            scheduleNoise({ duration: 0.028, gain: 0.024, frequency: 1800, endFrequency: 900, filterType: "bandpass", q: 1.1, startOffset: 0.095, attack: 0.001, release: 0.025 });
         },
         flag() {
             if (!canPlay("flag", 90)) return;
