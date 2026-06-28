@@ -46,10 +46,18 @@ function getImageSearchQuery(card) {
 
 let isReversed = false;
 let isDifficultMode = false;
+let generatedCardId = 0;
+const knownCardIds = new Set();
 
 // Chuyển đổi dữ liệu từ BE thành { question, answer }
 function getCardId(card) {
-    return String(card?._id || card?.id || "");
+    if (!card) return "";
+    if (card._id || card.id) return String(card._id || card.id);
+    if (!card.__localStudyId) {
+        generatedCardId += 1;
+        card.__localStudyId = `local-card-${generatedCardId}`;
+    }
+    return card.__localStudyId;
 }
 
 function mapCardToStudyData(card) {
@@ -63,12 +71,15 @@ function mapCardToStudyData(card) {
 }
 
 function getVisibleSourceCards() {
-    return isDifficultMode ? listCard.filter(card => card.isDifficult) : listCard;
+    const sourceCards = isDifficultMode ? listCard.filter(card => card.isDifficult) : listCard;
+    return sourceCards.filter(card => !knownCardIds.has(getCardId(card)));
 }
 
 let cardsData = getVisibleSourceCards().map(card => mapCardToStudyData(card));
 let currentActiveCard = 0;
 let cardsElement = [];
+let suppressCardClick = false;
+let isRemovingKnownCard = false;
 
 function shouldShowImageOn(side) {
     return imageDisplayMode === "both" || imageDisplayMode === side;
@@ -111,13 +122,13 @@ function refreshVisibleCards(preferredCardId = "") {
     createCards();
 }
 
-function toggleDifficultCard(data, button) {
+function toggleDifficultCard(data, buttons) {
     const sourceCard = listCard.find(card => getCardId(card) === data.id);
     if (!sourceCard) return;
 
     sourceCard.isDifficult = !sourceCard.isDifficult;
     data.isDifficult = sourceCard.isDifficult;
-    updateDifficultButtonState(button, data.isDifficult);
+    buttons.forEach(button => updateDifficultButtonState(button, data.isDifficult));
 
     if (isDifficultMode && !sourceCard.isDifficult) {
         refreshVisibleCards();
@@ -135,6 +146,60 @@ function showDifficultCards() {
     }
 }
 
+function getEmptyCardMessage() {
+    const hasSourceCards = isDifficultMode
+        ? listCard.some(card => card.isDifficult)
+        : listCard.length > 0;
+
+    if (hasSourceCards && knownCardIds.size > 0) {
+        return "Bạn đã thuộc hết thẻ trong lượt này.";
+    }
+
+    return isDifficultMode ? "Chưa có thẻ khó thuộc nào." : "Chưa có thẻ nào.";
+}
+
+function revealNextCardBehind(currentCard) {
+    if (cardsData.length <= 1) return;
+
+    const nextVisibleIndex = currentActiveCard >= cardsData.length - 1 ? 0 : currentActiveCard + 1;
+    const nextCard = cardsElement[nextVisibleIndex];
+    if (!nextCard || nextCard === currentCard) return;
+
+    nextCard.className = "card active known-card-reveal";
+    nextCard.classList.remove("show-answer");
+}
+
+function markCardAsKnown(data, card, buttons) {
+    if (isRemovingKnownCard || !data?.id) return;
+
+    isRemovingKnownCard = true;
+    buttons.forEach(button => {
+        button.disabled = true;
+    });
+    card.classList.remove("show-answer");
+    revealNextCardBehind(card);
+    card.classList.add("known-drop");
+
+    let didFinish = false;
+    const finishRemoval = () => {
+        if (didFinish) return;
+        didFinish = true;
+
+        knownCardIds.add(data.id);
+        cardsData = cardsData.filter(cardData => cardData.id !== data.id);
+
+        if (currentActiveCard >= cardsData.length) {
+            currentActiveCard = 0;
+        }
+
+        isRemovingKnownCard = false;
+        createCards();
+    };
+
+    card.addEventListener("animationend", finishRemoval, { once: true });
+    setTimeout(finishRemoval, 650);
+}
+
 // Tạo các card từ dữ liệu BE
 function createCards() {
     cardsContainer.innerHTML = ""; // Xóa danh sách cũ
@@ -143,7 +208,7 @@ function createCards() {
         currentElement.innerText = "0/0";
         cardsContainer.innerHTML = `
             <div class="empty-card-message">
-                ${isDifficultMode ? "Chưa có thẻ khó thuộc nào." : "Chưa có thẻ nào."}
+                ${getEmptyCardMessage()}
             </div>
         `;
         return;
@@ -162,6 +227,15 @@ function createCard(data, index) {
     const backImageHtml = getImageHtml(data, "back");
     const difficultButtonClass = data.isDifficult ? " active" : "";
     const difficultButtonLabel = data.isDifficult ? "Bỏ đánh dấu khó thuộc" : "Đánh dấu thẻ khó thuộc";
+    const knownButtonLabel = "Đánh dấu đã thuộc";
+    const actionButtonsHtml = `
+        <button class="difficult-card-btn${difficultButtonClass}" type="button" data-card-id="${escapeHtml(data.id)}" title="${escapeHtml(difficultButtonLabel)}" aria-label="${escapeHtml(difficultButtonLabel)}" aria-pressed="${data.isDifficult ? "true" : "false"}">
+            <i class="fa-solid fa-flag"></i>
+        </button>
+        <button class="known-card-btn" type="button" data-card-id="${escapeHtml(data.id)}" title="${escapeHtml(knownButtonLabel)}" aria-label="${escapeHtml(knownButtonLabel)}">
+            <i class="fa-solid fa-check"></i>
+        </button>
+    `;
     card.innerHTML = `
         <div class="inner-card card-animation">
             <div class="inner-card-front">
@@ -169,6 +243,7 @@ function createCard(data, index) {
                     ${frontImageHtml}
                     <p style="font-size:1.5rem">${escapeHtml(data.question)}</p>
                 </div>
+                ${actionButtonsHtml}
                 <button class="voice-btn front-voice" data-text="${escapeHtml(data.question)}"><i class="fa-solid fa-volume-high"></i></i></button>
             </div>
             <div class="inner-card-back">
@@ -176,19 +251,35 @@ function createCard(data, index) {
                     ${backImageHtml}
                     <p style="font-size:1.5rem">${escapeHtml(data.answer)}</p>
                 </div>
+                ${actionButtonsHtml}
                 <button class="voice-btn back-voice" data-text="${escapeHtml(data.answer)}"><i class="fa-solid fa-volume-high"></i></button>
             </div>
         </div>
-        <button class="difficult-card-btn${difficultButtonClass}" type="button" data-card-id="${escapeHtml(data.id)}" title="${escapeHtml(difficultButtonLabel)}" aria-label="${escapeHtml(difficultButtonLabel)}" aria-pressed="${data.isDifficult ? "true" : "false"}">
-            <i class="fa-solid fa-flag"></i>
-        </button>
     `;
-    card.addEventListener("click", () => card.classList.toggle("show-answer"));
+    card.addEventListener("click", () => {
+        if (isRemovingKnownCard) return;
+        if (suppressCardClick) {
+            suppressCardClick = false;
+            return;
+        }
 
-    const difficultButton = card.querySelector(".difficult-card-btn");
-    difficultButton.addEventListener("click", (e) => {
-        e.stopPropagation();
-        toggleDifficultCard(data, difficultButton);
+        card.classList.toggle("show-answer");
+    });
+
+    const difficultButtons = card.querySelectorAll(".difficult-card-btn");
+    difficultButtons.forEach(button => {
+        button.addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggleDifficultCard(data, difficultButtons);
+        });
+    });
+
+    const knownButtons = card.querySelectorAll(".known-card-btn");
+    knownButtons.forEach(button => {
+        button.addEventListener("click", (e) => {
+            e.stopPropagation();
+            markCardAsKnown(data, card, knownButtons);
+        });
     });
 
     // Thêm sự kiện cho nút Voice trên mặt trước
@@ -254,6 +345,7 @@ function updateCurrentText() {
 
 // Chuyển card tiếp theo
 nextButton.addEventListener("click", () => {
+    if (isRemovingKnownCard) return;
     if (cardsElement.length === 0) return;
     cardsElement[currentActiveCard].className = "card left";
     currentActiveCard++;
@@ -266,6 +358,7 @@ nextButton.addEventListener("click", () => {
 
 // Chuyển card trước đó
 prevButton.addEventListener("click", () => {
+    if (isRemovingKnownCard) return;
     if (cardsElement.length === 0) return;
     cardsElement[currentActiveCard].className = "card right";
     currentActiveCard--;
@@ -275,6 +368,53 @@ prevButton.addEventListener("click", () => {
     cardsElement[currentActiveCard].className = "card active";
     updateCurrentText();
 });
+
+let swipeStartX = 0;
+let swipeStartY = 0;
+let swipeStartTime = 0;
+let isSwipingCard = false;
+
+cardsContainer.addEventListener("touchstart", (event) => {
+    if (event.target.closest("button, a, input, textarea, select")) return;
+    if (addContainer.classList.contains("show")) return;
+
+    const touch = event.touches[0];
+    if (!touch) return;
+
+    swipeStartX = touch.clientX;
+    swipeStartY = touch.clientY;
+    swipeStartTime = Date.now();
+    isSwipingCard = true;
+}, { passive: true });
+
+cardsContainer.addEventListener("touchend", (event) => {
+    if (!isSwipingCard) return;
+
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+
+    const deltaX = touch.clientX - swipeStartX;
+    const deltaY = touch.clientY - swipeStartY;
+    const elapsed = Date.now() - swipeStartTime;
+    const isHorizontalSwipe = Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.4;
+
+    isSwipingCard = false;
+
+    if (!isHorizontalSwipe || elapsed > 800 || cardsElement.length === 0) return;
+
+    event.preventDefault();
+    suppressCardClick = true;
+
+    if (deltaX < 0) {
+        nextButton.click();
+    } else {
+        prevButton.click();
+    }
+
+    setTimeout(() => {
+        suppressCardClick = false;
+    }, 250);
+}, { passive: false });
 
 // Mở form thêm card
 showButton.addEventListener("click", () => addContainer.classList.add("show"));
@@ -512,6 +652,8 @@ $(document).ready(function () {
 
 // Lắng nghe sự kiện phím từ bàn phím
 document.addEventListener('keydown', (e) => {
+    if (isRemovingKnownCard) return;
+
     switch (e.key) {
         case 'ArrowRight':
             nextButton.click();
