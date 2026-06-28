@@ -300,6 +300,17 @@ h1 button {
   text-decoration: none;
 }
 
+.settings-panel .theme-toggle-btn {
+  width: 100%;
+  min-width: 0;
+}
+
+.theme-toggle-btn.is-dark {
+  color: #f7c56d;
+  background: #222b3a;
+  border-color: rgba(255, 199, 122, 0.36);
+}
+
 .settings-sound-row {
   display: flex;
   flex-direction: column;
@@ -957,6 +968,183 @@ h1 button {
 .show {
   opacity: 1;
   z-index: 2;
+}
+
+body.flashcard-dark-mode {
+  --light-color: #171b24;
+  --border-color: #465166;
+  color: #eaf1ff;
+  color-scheme: dark;
+  background-image: linear-gradient(to top, #17130f 0%, #222734 100%);
+}
+
+body.flashcard-dark-mode .header,
+body.flashcard-dark-mode .header nav {
+  background: #151923;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.42);
+}
+
+body.flashcard-dark-mode .nav-link,
+body.flashcard-dark-mode .username {
+  color: #f4efe6 !important;
+}
+
+body.flashcard-dark-mode .navbar-toggler {
+  background-color: rgba(255, 255, 255, 0.88);
+}
+
+body.flashcard-dark-mode h1,
+body.flashcard-dark-mode .settings-panel-header h2 {
+  color: #fff2d8;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
+}
+
+body.flashcard-dark-mode .image-mode-toggle,
+body.flashcard-dark-mode .sound-toggle-btn,
+body.flashcard-dark-mode .sound-volume-control {
+  color: #ffd08a;
+  border-color: rgba(255, 200, 122, 0.28);
+  background: rgba(29, 34, 45, 0.94);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.26);
+}
+
+body.flashcard-dark-mode .image-mode-btn {
+  color: #ffd08a;
+}
+
+body.flashcard-dark-mode .image-mode-btn:hover,
+body.flashcard-dark-mode .sound-toggle-btn:hover,
+body.flashcard-dark-mode .settings-close {
+  background: rgba(255, 200, 122, 0.14);
+}
+
+body.flashcard-dark-mode .image-mode-btn.active,
+body.flashcard-dark-mode .settings-close:hover {
+  color: #17130f;
+  background: linear-gradient(90deg, #ffb451 0%, #ffd2a8 100%);
+}
+
+body.flashcard-dark-mode .settings-panel {
+  border-color: rgba(255, 200, 122, 0.22);
+  background: rgba(25, 29, 39, 0.97);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.42);
+}
+
+body.flashcard-dark-mode .settings-close {
+  color: #ffd08a;
+}
+
+body.flashcard-dark-mode .card,
+body.flashcard-dark-mode .inner-card-front,
+body.flashcard-dark-mode .inner-card-back {
+  background-color: #171b24;
+}
+
+body.flashcard-dark-mode .inner-card {
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.42),
+    0 0 0 1px rgba(255, 200, 122, 0.14);
+}
+
+body.flashcard-dark-mode .card-animation {
+  background-image: linear-gradient(#171b24, #171b24),
+    conic-gradient(
+      from var(--gradient-angle),
+      #4a3820 0%,
+      #c28d38 37%,
+      #ffe0a0 30%,
+      #c28d38 33%,
+      #4a3820 40%,
+      #4a3820 50%,
+      #c28d38 77%,
+      #ffe0a0 80%,
+      #c28d38 83%,
+      #4a3820 90%
+    );
+}
+
+body.flashcard-dark-mode .card p {
+  color: #ecf4ff;
+}
+
+body.flashcard-dark-mode .card-preview-image,
+body.flashcard-dark-mode .image-result-item,
+body.flashcard-dark-mode .selected-image-preview {
+  border-color: rgba(255, 200, 122, 0.25);
+  background: #202633;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
+body.flashcard-dark-mode .selected-image-preview,
+body.flashcard-dark-mode .image-search-message,
+body.flashcard-dark-mode .empty-card-message {
+  color: #d7e2f3;
+}
+
+body.flashcard-dark-mode .empty-card-message {
+  border-color: rgba(255, 200, 122, 0.24);
+  background: rgba(28, 33, 44, 0.78);
+}
+
+body.flashcard-dark-mode .known-card-btn,
+body.flashcard-dark-mode .difficult-card-btn,
+body.flashcard-dark-mode .voice-btn {
+  background: rgba(27, 32, 43, 0.86);
+}
+
+body.flashcard-dark-mode .voice-btn i {
+  color: #b9d7ff;
+  text-shadow: none;
+}
+
+body.flashcard-dark-mode .navigation,
+body.flashcard-dark-mode .navigation .nav-button,
+body.flashcard-dark-mode .navigation p {
+  color: #f3ead9;
+}
+
+body.flashcard-dark-mode .add-container {
+  border-color: rgba(255, 200, 122, 0.28);
+  background-color: #171b24;
+  scrollbar-color: rgba(255, 200, 122, 0.52) rgba(16, 20, 29, 0.8);
+}
+
+body.flashcard-dark-mode .form-group label {
+  color: #ffd08a;
+}
+
+body.flashcard-dark-mode .form-group textarea,
+body.flashcard-dark-mode .form-group input,
+body.flashcard-dark-mode .language-select,
+body.flashcard-dark-mode .select2-container--default .select2-selection--single,
+body.flashcard-dark-mode .select2-container--default .select2-search--dropdown .select2-search__field {
+  color: #eaf1ff;
+  border-color: #465166;
+  background-color: #10141d;
+}
+
+body.flashcard-dark-mode .form-group textarea::placeholder,
+body.flashcard-dark-mode .form-group input::placeholder {
+  color: #94a1b6;
+}
+
+body.flashcard-dark-mode .select2-container--default .select2-selection__rendered {
+  color: #eaf1ff;
+}
+
+body.flashcard-dark-mode .select2-dropdown {
+  color: #eaf1ff;
+  border-color: #465166;
+  background-color: #10141d;
+}
+
+body.flashcard-dark-mode #learn,
+body.flashcard-dark-mode .choise-container {
+  background-image: linear-gradient(90deg, #204d88 0%, #5a8cc3 100%);
+}
+
+body.flashcard-dark-mode .closex {
+  color: #ffd08a;
+  background-color: rgba(28, 33, 44, 0.9);
 }
 
 @media (max-width: 768px) {

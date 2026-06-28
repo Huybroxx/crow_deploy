@@ -14,6 +14,7 @@ const settingsCloseButton = document.getElementById("settings-close");
 const soundToggleButton = document.getElementById("sound-toggle");
 const soundVolumeInput = document.getElementById("sound-volume");
 const soundVolumeValue = document.getElementById("sound-volume-value");
+const themeToggleButton = document.getElementById("theme-toggle");
 // Lấy dữ liệu từ HTML (Pug đã render)
 const cardData = document.querySelector(".card-data");
 const flashcard = JSON.parse(cardData.getAttribute("data"));
@@ -181,11 +182,9 @@ const soundEffects = (() => {
         },
         flip() {
             if (!canPlay("flip", 110)) return;
-            scheduleNoise({ duration: 0.075, gain: 0.07, frequency: 5200, endFrequency: 1600, filterType: "bandpass", q: 0.85, startOffset: 0, attack: 0.002, release: 0.025 });
-            scheduleNoise({ duration: 0.06, gain: 0.04, frequency: 7600, endFrequency: 3200, filterType: "highpass", q: 0.65, startOffset: 0.022, attack: 0.001, release: 0.02 });
-            scheduleTone({ frequency: 720, endFrequency: 1180, duration: 0.045, gain: 0.04, type: "triangle", startOffset: 0.062, attack: 0.003, release: 0.035 });
-            scheduleTone({ frequency: 1320, endFrequency: 980, duration: 0.052, gain: 0.026, type: "sine", startOffset: 0.095, attack: 0.002, release: 0.04 });
-            scheduleNoise({ duration: 0.032, gain: 0.026, frequency: 2800, endFrequency: 1200, filterType: "bandpass", q: 1.2, startOffset: 0.118, attack: 0.001, release: 0.028 });
+            scheduleTone({ frequency: 560, endFrequency: 980, duration: 0.07, gain: 0.026, type: "triangle", startOffset: 0, attack: 0.01, release: 0.055 });
+            scheduleTone({ frequency: 1240, endFrequency: 760, duration: 0.075, gain: 0.022, type: "sine", startOffset: 0.035, attack: 0.008, release: 0.06 });
+            scheduleTone({ frequency: 1650, endFrequency: 2100, duration: 0.035, gain: 0.014, type: "sine", startOffset: 0.09, attack: 0.006, release: 0.045 });
         },
         known() {
             if (!canPlay("known", 120)) return;
@@ -225,8 +224,10 @@ let generatedCardId = 0;
 const knownCardIds = new Set();
 const soundStorageKey = "flashcard-sound-effects-enabled";
 const soundVolumeStorageKey = "flashcard-sound-effects-volume";
+const themeStorageKey = "flashcard-theme";
 let isSoundEnabled = localStorage.getItem(soundStorageKey) !== "false";
 let soundVolumePercent = Number(localStorage.getItem(soundVolumeStorageKey) || 85);
+let isDarkMode = localStorage.getItem(themeStorageKey) === "dark";
 if (!Number.isFinite(soundVolumePercent)) {
     soundVolumePercent = 85;
 }
@@ -305,6 +306,22 @@ function updateSoundVolumeControl() {
     if (soundVolumeValue) {
         soundVolumeValue.innerText = `${soundVolumePercent}%`;
     }
+}
+
+function updateThemeToggleButton() {
+    if (!themeToggleButton) return;
+
+    themeToggleButton.classList.toggle("is-dark", isDarkMode);
+    themeToggleButton.setAttribute("aria-pressed", isDarkMode ? "true" : "false");
+    themeToggleButton.setAttribute("title", isDarkMode ? "Chuyển về chế độ sáng" : "Bật chế độ tối");
+    themeToggleButton.innerHTML = isDarkMode
+        ? '<i class="fas fa-sun"></i><span>Chế độ sáng</span>'
+        : '<i class="fas fa-moon"></i><span>Chế độ tối</span>';
+}
+
+function applyThemeMode() {
+    document.body.classList.toggle("flashcard-dark-mode", isDarkMode);
+    updateThemeToggleButton();
 }
 
 function setSettingsPanelOpen(isOpen) {
@@ -676,6 +693,7 @@ shuffleButton.addEventListener("click", () => {
 updateImageModeButtons();
 updateSoundToggleButton();
 updateSoundVolumeControl();
+applyThemeMode();
 createCards();
 
 soundToggleButton?.addEventListener("click", () => {
@@ -702,6 +720,13 @@ soundVolumeInput?.addEventListener("change", () => {
     if (isSoundEnabled) {
         soundEffects.flip();
     }
+});
+
+themeToggleButton?.addEventListener("click", () => {
+    isDarkMode = !isDarkMode;
+    localStorage.setItem(themeStorageKey, isDarkMode ? "dark" : "light");
+    applyThemeMode();
+    soundEffects.move();
 });
 
 settingsToggleButton?.addEventListener("click", (event) => {
