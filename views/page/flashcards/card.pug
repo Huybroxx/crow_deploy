@@ -24,6 +24,9 @@ block main
             a#edit-set.clear.btn.btn-custom(href=`/flashcards/edit/${flashCard._id}`)
                 i.fas.fa-pen.mr-2
                 |  Sửa
+            button#sound-toggle.sound-toggle-btn(type="button" aria-pressed="true" title="Tắt âm thanh hiệu ứng")
+                i.fas.fa-volume-high
+                span Âm bật
             .image-mode-toggle(role="group" aria-label="Chế độ hiển thị ảnh")
                 button.image-mode-btn(type="button" data-image-mode="front" title="Hiện ảnh ở mặt trước")
                     i.fas.fa-image

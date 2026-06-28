@@ -8,6 +8,7 @@ const hideButton = document.getElementById("hide");
 const addContainer = document.getElementById("add-container");
 const shuffleButton = document.getElementById("random"); // Nút trộn thẻ
 const alertMessage = document.getElementById("alert");
+const soundToggleButton = document.getElementById("sound-toggle");
 // Lấy dữ liệu từ HTML (Pug đã render)
 const cardData = document.querySelector(".card-data");
 const flashcard = JSON.parse(cardData.getAttribute("data"));
@@ -44,10 +45,167 @@ function getImageSearchQuery(card) {
     return (card.vocabulary || card.meaning || "").trim();
 }
 
+const soundEffects = (() => {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    let context = null;
+    let masterGain = null;
+    let isEnabled = true;
+    const lastPlayedAt = new Map();
+
+    function getContext() {
+        if (!AudioContextClass) return null;
+        if (!context) {
+            context = new AudioContextClass();
+            masterGain = context.createGain();
+            masterGain.gain.value = 0.45;
+            masterGain.connect(context.destination);
+        }
+
+        if (context.state === "suspended") {
+            context.resume().catch(() => {});
+        }
+
+        return context;
+    }
+
+    function canPlay(name, gap = 60) {
+        if (!isEnabled) return false;
+        const now = Date.now();
+        const previous = lastPlayedAt.get(name) || 0;
+        if (now - previous < gap) return false;
+        lastPlayedAt.set(name, now);
+        return true;
+    }
+
+    function scheduleNoise(options = {}) {
+        const ctx = getContext();
+        if (!ctx || !masterGain) return;
+
+        const {
+            duration = 0.08,
+            gain = 0.08,
+            frequency = 1800,
+            filterType = "bandpass",
+            q = 1,
+            startOffset = 0,
+            attack = 0.004,
+            release = 0.045,
+        } = options;
+        const startAt = ctx.currentTime + startOffset;
+        const frameCount = Math.max(1, Math.floor(ctx.sampleRate * duration));
+        const buffer = ctx.createBuffer(1, frameCount, ctx.sampleRate);
+        const output = buffer.getChannelData(0);
+
+        for (let i = 0; i < frameCount; i += 1) {
+            const fade = 1 - (i / frameCount) * 0.35;
+            output[i] = (Math.random() * 2 - 1) * fade;
+        }
+
+        const source = ctx.createBufferSource();
+        const filter = ctx.createBiquadFilter();
+        const volume = ctx.createGain();
+
+        source.buffer = buffer;
+        filter.type = filterType;
+        filter.frequency.setValueAtTime(frequency, startAt);
+        filter.Q.value = q;
+        volume.gain.setValueAtTime(0.0001, startAt);
+        volume.gain.linearRampToValueAtTime(gain, startAt + attack);
+        volume.gain.exponentialRampToValueAtTime(0.0001, startAt + duration + release);
+
+        source.connect(filter);
+        filter.connect(volume);
+        volume.connect(masterGain);
+        source.start(startAt);
+        source.stop(startAt + duration + release + 0.03);
+    }
+
+    function scheduleTone(options = {}) {
+        const ctx = getContext();
+        if (!ctx || !masterGain) return;
+
+        const {
+            frequency = 440,
+            endFrequency,
+            duration = 0.08,
+            gain = 0.05,
+            type = "sine",
+            startOffset = 0,
+            attack = 0.006,
+            release = 0.06,
+        } = options;
+        const startAt = ctx.currentTime + startOffset;
+        const oscillator = ctx.createOscillator();
+        const volume = ctx.createGain();
+
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, startAt);
+        if (endFrequency) {
+            oscillator.frequency.exponentialRampToValueAtTime(Math.max(1, endFrequency), startAt + duration);
+        }
+        volume.gain.setValueAtTime(0.0001, startAt);
+        volume.gain.linearRampToValueAtTime(gain, startAt + attack);
+        volume.gain.exponentialRampToValueAtTime(0.0001, startAt + duration + release);
+
+        oscillator.connect(volume);
+        volume.connect(masterGain);
+        oscillator.start(startAt);
+        oscillator.stop(startAt + duration + release + 0.03);
+    }
+
+    return {
+        setEnabled(value) {
+            isEnabled = Boolean(value);
+            if (!isEnabled && context?.state === "running") {
+                context.suspend().catch(() => {});
+            }
+        },
+        isEnabled() {
+            return isEnabled;
+        },
+        flip() {
+            if (!canPlay("flip", 90)) return;
+            scheduleNoise({ duration: 0.075, gain: 0.05, frequency: 2600, q: 0.8, startOffset: 0 });
+            scheduleNoise({ duration: 0.09, gain: 0.045, frequency: 1250, q: 1.2, startOffset: 0.035 });
+            scheduleNoise({ duration: 0.045, gain: 0.025, frequency: 4200, filterType: "highpass", startOffset: 0.085 });
+        },
+        known() {
+            if (!canPlay("known", 120)) return;
+            scheduleTone({ frequency: 620, endFrequency: 820, duration: 0.08, gain: 0.045, type: "triangle" });
+            scheduleTone({ frequency: 980, duration: 0.11, gain: 0.035, type: "sine", startOffset: 0.07 });
+            scheduleNoise({ duration: 0.045, gain: 0.018, frequency: 3200, filterType: "highpass", startOffset: 0.015 });
+        },
+        drop() {
+            if (!canPlay("drop", 120)) return;
+            scheduleTone({ frequency: 150, endFrequency: 72, duration: 0.18, gain: 0.08, type: "sine", startOffset: 0.16, release: 0.09 });
+            scheduleNoise({ duration: 0.1, gain: 0.055, frequency: 180, filterType: "lowpass", q: 0.7, startOffset: 0.18, release: 0.08 });
+        },
+        move() {
+            if (!canPlay("move", 70)) return;
+            scheduleNoise({ duration: 0.045, gain: 0.025, frequency: 1100, q: 0.9 });
+            scheduleTone({ frequency: 360, duration: 0.045, gain: 0.018, type: "triangle", startOffset: 0.018 });
+        },
+        flag() {
+            if (!canPlay("flag", 90)) return;
+            scheduleTone({ frequency: 410, endFrequency: 520, duration: 0.055, gain: 0.03, type: "triangle" });
+            scheduleNoise({ duration: 0.04, gain: 0.018, frequency: 1600, startOffset: 0.02 });
+        },
+        shuffle() {
+            if (!canPlay("shuffle", 180)) return;
+            scheduleNoise({ duration: 0.06, gain: 0.03, frequency: 1300, startOffset: 0 });
+            scheduleNoise({ duration: 0.06, gain: 0.03, frequency: 2100, startOffset: 0.055 });
+            scheduleNoise({ duration: 0.05, gain: 0.024, frequency: 900, startOffset: 0.105 });
+        },
+    };
+})();
+
 let isReversed = false;
 let isDifficultMode = false;
 let generatedCardId = 0;
 const knownCardIds = new Set();
+const soundStorageKey = "flashcard-sound-effects-enabled";
+let isSoundEnabled = localStorage.getItem(soundStorageKey) !== "false";
+soundEffects.setEnabled(isSoundEnabled);
 
 // Chuyển đổi dữ liệu từ BE thành { question, answer }
 function getCardId(card) {
@@ -100,6 +258,17 @@ function updateImageModeButtons() {
     });
 }
 
+function updateSoundToggleButton() {
+    if (!soundToggleButton) return;
+
+    soundToggleButton.classList.toggle("is-muted", !isSoundEnabled);
+    soundToggleButton.setAttribute("aria-pressed", isSoundEnabled ? "true" : "false");
+    soundToggleButton.setAttribute("title", isSoundEnabled ? "Tắt âm thanh hiệu ứng" : "Bật âm thanh hiệu ứng");
+    soundToggleButton.innerHTML = isSoundEnabled
+        ? '<i class="fas fa-volume-high"></i><span>Âm bật</span>'
+        : '<i class="fas fa-volume-xmark"></i><span>Âm tắt</span>';
+}
+
 function updateDifficultButtonState(button, isDifficult) {
     button.classList.toggle("active", isDifficult);
     button.setAttribute("aria-pressed", isDifficult ? "true" : "false");
@@ -129,6 +298,7 @@ function toggleDifficultCard(data, buttons) {
     sourceCard.isDifficult = !sourceCard.isDifficult;
     data.isDifficult = sourceCard.isDifficult;
     buttons.forEach(button => updateDifficultButtonState(button, data.isDifficult));
+    soundEffects.flag();
 
     if (isDifficultMode && !sourceCard.isDifficult) {
         refreshVisibleCards();
@@ -173,6 +343,8 @@ function markCardAsKnown(data, card, buttons) {
     if (isRemovingKnownCard || !data?.id) return;
 
     isRemovingKnownCard = true;
+    soundEffects.known();
+    soundEffects.drop();
     buttons.forEach(button => {
         button.disabled = true;
     });
@@ -264,6 +436,7 @@ function createCard(data, index) {
         }
 
         card.classList.toggle("show-answer");
+        soundEffects.flip();
     });
 
     const difficultButtons = card.querySelectorAll(".difficult-card-btn");
@@ -347,6 +520,7 @@ function updateCurrentText() {
 nextButton.addEventListener("click", () => {
     if (isRemovingKnownCard) return;
     if (cardsElement.length === 0) return;
+    soundEffects.move();
     cardsElement[currentActiveCard].className = "card left";
     currentActiveCard++;
     if (currentActiveCard > cardsElement.length - 1) {
@@ -360,6 +534,7 @@ nextButton.addEventListener("click", () => {
 prevButton.addEventListener("click", () => {
     if (isRemovingKnownCard) return;
     if (cardsElement.length === 0) return;
+    soundEffects.move();
     cardsElement[currentActiveCard].className = "card right";
     currentActiveCard--;
     if (currentActiveCard < 0) {
@@ -440,6 +615,8 @@ shuffleButton.addEventListener("click", () => {
         return;
     }
 
+    soundEffects.shuffle();
+
     // Fisher-Yates shuffle
     for (let i = cardsData.length - 1; i > 0; i--) {
         let j = Math.floor(Math.random() * (i + 1));
@@ -451,13 +628,26 @@ shuffleButton.addEventListener("click", () => {
 
 // Khởi tạo các card từ dữ liệu BE
 updateImageModeButtons();
+updateSoundToggleButton();
 createCards();
+
+soundToggleButton?.addEventListener("click", () => {
+    isSoundEnabled = !isSoundEnabled;
+    localStorage.setItem(soundStorageKey, isSoundEnabled ? "true" : "false");
+    soundEffects.setEnabled(isSoundEnabled);
+    updateSoundToggleButton();
+
+    if (isSoundEnabled) {
+        soundEffects.known();
+    }
+});
 
 imageModeButtons.forEach(button => {
     button.addEventListener("click", () => {
         imageDisplayMode = button.dataset.imageMode;
         localStorage.setItem(imageModeStorageKey, imageDisplayMode);
         updateImageModeButtons();
+        soundEffects.move();
         createCards();
     });
 });
@@ -666,6 +856,7 @@ document.addEventListener('keydown', (e) => {
             e.preventDefault(); // Ngăn scroll khi nhấn space
             if (cardsElement[currentActiveCard]) {
                 cardsElement[currentActiveCard].classList.toggle("show-answer");
+                soundEffects.flip();
             }
             break;
         default:
@@ -678,6 +869,7 @@ document.addEventListener('keydown', (e) => {
 document.getElementById("reverse").addEventListener("click", () => {
     const currentCardId = cardsData[currentActiveCard]?.id || "";
     isReversed = !isReversed;
+    soundEffects.move();
 
     refreshVisibleCards(currentCardId);
 });

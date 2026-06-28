@@ -78,6 +78,35 @@ h1 button {
   box-shadow: 0 6px 16px rgba(255, 169, 70, 0.28);
 }
 
+.sound-toggle-btn {
+  height: 37px;
+  min-width: 104px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid #ffe0b8;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #9a5a13;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgba(255, 169, 70, 0.12);
+  transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.sound-toggle-btn:hover {
+  background: #fff4e8;
+  transform: translateY(-1px);
+}
+
+.sound-toggle-btn.is-muted {
+  color: #8f99a6;
+  background: rgba(255, 255, 255, 0.62);
+  border-color: #e2e7ee;
+}
+
 @media (max-width: 768px) {
   .image-mode-toggle {
     margin-left: 0;
@@ -85,6 +114,12 @@ h1 button {
 
   .image-mode-btn {
     padding: 0.32rem 0.52rem;
+    font-size: 0.74rem;
+  }
+
+  .sound-toggle-btn {
+    min-width: 0;
+    padding: 0 0.7rem;
     font-size: 0.74rem;
   }
 }
@@ -926,6 +961,11 @@ h1 button {
     height: 38px;
     padding: 0.35rem 0.45rem;
     font-size: 0.78rem;
+  }
+
+  .box > .sound-toggle-btn {
+    flex: 1 1 calc(50% - 0.45rem);
+    height: 38px;
   }
 
   .image-mode-toggle {
