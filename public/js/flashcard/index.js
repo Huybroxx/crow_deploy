@@ -85,6 +85,7 @@ const soundEffects = (() => {
             duration = 0.08,
             gain = 0.08,
             frequency = 1800,
+            endFrequency,
             filterType = "bandpass",
             q = 1,
             startOffset = 0,
@@ -108,6 +109,9 @@ const soundEffects = (() => {
         source.buffer = buffer;
         filter.type = filterType;
         filter.frequency.setValueAtTime(frequency, startAt);
+        if (endFrequency) {
+            filter.frequency.exponentialRampToValueAtTime(Math.max(1, endFrequency), startAt + duration);
+        }
         filter.Q.value = q;
         volume.gain.setValueAtTime(0.0001, startAt);
         volume.gain.linearRampToValueAtTime(gain, startAt + attack);
@@ -164,10 +168,13 @@ const soundEffects = (() => {
             return isEnabled;
         },
         flip() {
-            if (!canPlay("flip", 90)) return;
-            scheduleNoise({ duration: 0.075, gain: 0.05, frequency: 2600, q: 0.8, startOffset: 0 });
-            scheduleNoise({ duration: 0.09, gain: 0.045, frequency: 1250, q: 1.2, startOffset: 0.035 });
-            scheduleNoise({ duration: 0.045, gain: 0.025, frequency: 4200, filterType: "highpass", startOffset: 0.085 });
+            if (!canPlay("flip", 140)) return;
+            scheduleNoise({ duration: 0.028, gain: 0.035, frequency: 6200, endFrequency: 3600, filterType: "highpass", q: 0.7, startOffset: 0, release: 0.018 });
+            scheduleNoise({ duration: 0.052, gain: 0.065, frequency: 3400, endFrequency: 1500, filterType: "bandpass", q: 1.4, startOffset: 0.018, release: 0.025 });
+            scheduleNoise({ duration: 0.045, gain: 0.05, frequency: 4700, endFrequency: 2400, filterType: "highpass", q: 0.9, startOffset: 0.052, release: 0.02 });
+            scheduleNoise({ duration: 0.068, gain: 0.06, frequency: 2100, endFrequency: 850, filterType: "bandpass", q: 1.1, startOffset: 0.082, release: 0.035 });
+            scheduleNoise({ duration: 0.042, gain: 0.034, frequency: 5200, endFrequency: 3000, filterType: "highpass", q: 0.8, startOffset: 0.135, release: 0.025 });
+            scheduleNoise({ duration: 0.055, gain: 0.028, frequency: 1300, endFrequency: 650, filterType: "bandpass", q: 0.9, startOffset: 0.16, release: 0.04 });
         },
         known() {
             if (!canPlay("known", 120)) return;
