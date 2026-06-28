@@ -180,13 +180,12 @@ const soundEffects = (() => {
             }
         },
         flip() {
-            if (!canPlay("flip", 140)) return;
-            scheduleNoise({ duration: 0.028, gain: 0.035, frequency: 6200, endFrequency: 3600, filterType: "highpass", q: 0.7, startOffset: 0, release: 0.018 });
-            scheduleNoise({ duration: 0.052, gain: 0.065, frequency: 3400, endFrequency: 1500, filterType: "bandpass", q: 1.4, startOffset: 0.018, release: 0.025 });
-            scheduleNoise({ duration: 0.045, gain: 0.05, frequency: 4700, endFrequency: 2400, filterType: "highpass", q: 0.9, startOffset: 0.052, release: 0.02 });
-            scheduleNoise({ duration: 0.068, gain: 0.06, frequency: 2100, endFrequency: 850, filterType: "bandpass", q: 1.1, startOffset: 0.082, release: 0.035 });
-            scheduleNoise({ duration: 0.042, gain: 0.034, frequency: 5200, endFrequency: 3000, filterType: "highpass", q: 0.8, startOffset: 0.135, release: 0.025 });
-            scheduleNoise({ duration: 0.055, gain: 0.028, frequency: 1300, endFrequency: 650, filterType: "bandpass", q: 0.9, startOffset: 0.16, release: 0.04 });
+            if (!canPlay("flip", 110)) return;
+            scheduleNoise({ duration: 0.075, gain: 0.07, frequency: 5200, endFrequency: 1600, filterType: "bandpass", q: 0.85, startOffset: 0, attack: 0.002, release: 0.025 });
+            scheduleNoise({ duration: 0.06, gain: 0.04, frequency: 7600, endFrequency: 3200, filterType: "highpass", q: 0.65, startOffset: 0.022, attack: 0.001, release: 0.02 });
+            scheduleTone({ frequency: 720, endFrequency: 1180, duration: 0.045, gain: 0.04, type: "triangle", startOffset: 0.062, attack: 0.003, release: 0.035 });
+            scheduleTone({ frequency: 1320, endFrequency: 980, duration: 0.052, gain: 0.026, type: "sine", startOffset: 0.095, attack: 0.002, release: 0.04 });
+            scheduleNoise({ duration: 0.032, gain: 0.026, frequency: 2800, endFrequency: 1200, filterType: "bandpass", q: 1.2, startOffset: 0.118, attack: 0.001, release: 0.028 });
         },
         known() {
             if (!canPlay("known", 120)) return;
