@@ -922,6 +922,8 @@ document.addEventListener('keydown', (e) => {
         return;
     }
 
+    if (settingsPanel?.classList.contains("show")) return;
+    if (e.target instanceof Element && e.target.closest("input, textarea, select, button, a, [contenteditable='true']")) return;
     if (isRemovingKnownCard) return;
 
     switch (e.key) {
@@ -932,11 +934,16 @@ document.addEventListener('keydown', (e) => {
             prevButton.click();
             break;
         case 'ArrowDown':
-        case ' ':
-            e.preventDefault(); // Ngăn scroll khi nhấn space
             if (cardsElement[currentActiveCard]) {
                 cardsElement[currentActiveCard].classList.toggle("show-answer");
                 soundEffects.flip();
+            }
+            break;
+        case ' ':
+            e.preventDefault(); // Ngăn scroll khi nhấn space
+            if (cardsElement[currentActiveCard] && cardsData[currentActiveCard]) {
+                const knownButtons = cardsElement[currentActiveCard].querySelectorAll(".known-card-btn");
+                markCardAsKnown(cardsData[currentActiveCard], cardsElement[currentActiveCard], knownButtons);
             }
             break;
         default:
