@@ -227,6 +227,96 @@ h1 button {
   flex-wrap: wrap;
 }
 
+.settings-panel {
+  position: absolute;
+  left: 2rem;
+  bottom: 5.4rem;
+  z-index: 40;
+  width: min(92vw, 330px);
+  padding: 0.95rem;
+  border: 1px solid #ffe0b8;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 40px rgba(38, 29, 14, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px) scale(0.98);
+  transform-origin: left bottom;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.settings-panel.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.settings-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.8rem;
+}
+
+.settings-panel-header h2 {
+  margin: 0;
+  color: #001227ee;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.settings-close {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: #fff4e8;
+  color: #9a5a13;
+  cursor: pointer;
+}
+
+.settings-close:hover {
+  color: #fff;
+  background: #ff9f2f;
+}
+
+.settings-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.settings-panel .settings-action {
+  width: 100%;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  text-decoration: none;
+}
+
+.settings-sound-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.settings-sound-row .sound-toggle-btn,
+.settings-sound-row .sound-volume-control {
+  width: 100%;
+  min-width: 0;
+}
+
+.settings-sound-row .sound-volume-control input[type="range"] {
+  flex: 1 1 auto;
+  width: auto;
+}
+
 .cards {
   perspective: 1000px;
   position: relative;
@@ -995,6 +1085,17 @@ h1 button {
     justify-content: center;
     gap: 0.45rem;
     margin-top: 0.15rem;
+  }
+
+  .settings-panel {
+    position: fixed;
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    width: auto;
+    max-height: min(72dvh, 26rem);
+    overflow-y: auto;
+    transform-origin: center bottom;
   }
 
   .box > .btn-custom {

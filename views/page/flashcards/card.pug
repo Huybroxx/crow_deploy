@@ -12,25 +12,15 @@ block main
         .card-data(data=JSON.stringify(flashCard))
     .container
         .box
-            button#clear.clear.btn.btn-custom
-                i.fas.fa-trash.mr-2
-                |  Xóa tất cả
             button#random.clear.btn.btn-custom
                 i.fas.fa-random.mr-2
                 |  Trộn thẻ
             button#reverse.clear.btn.btn-custom
                 i.fas.fa-retweet.mr-2
                 |  Đảo
-            a#edit-set.clear.btn.btn-custom(href=`/flashcards/edit/${flashCard._id}`)
-                i.fas.fa-pen.mr-2
-                |  Sửa
-            button#sound-toggle.sound-toggle-btn(type="button" aria-pressed="true" title="Tắt âm thanh hiệu ứng")
-                i.fas.fa-volume-high
-                span Âm bật
-            .sound-volume-control(title="Âm lượng hiệu ứng")
-                i.fas.fa-volume-low
-                input#sound-volume(type="range" min="0" max="100" step="1" value="85" aria-label="Âm lượng hiệu ứng")
-                span#sound-volume-value 85%
+            button#settings-toggle.clear.btn.btn-custom(type="button" aria-expanded="false" aria-controls="settings-panel")
+                i.fas.fa-gear.mr-2
+                |  Cài đặt
             .image-mode-toggle(role="group" aria-label="Chế độ hiển thị ảnh")
                 button.image-mode-btn(type="button" data-image-mode="front" title="Hiện ảnh ở mặt trước")
                     i.fas.fa-image
@@ -41,6 +31,26 @@ block main
                 button.image-mode-btn(type="button" data-image-mode="both" title="Hiện ảnh ở cả hai mặt")
                     i.fas.fa-images
                     |  Cả hai
+        #settings-panel.settings-panel(aria-hidden="true")
+            .settings-panel-header
+                h2 Cài đặt
+                button#settings-close.settings-close(type="button" aria-label="Đóng cài đặt")
+                    i.fas.fa-times
+            .settings-panel-body
+                button#clear.clear.btn.btn-custom.settings-action(type="button")
+                    i.fas.fa-trash.mr-2
+                    |  Xóa tất cả
+                a#edit-set.clear.btn.btn-custom.settings-action(href=`/flashcards/edit/${flashCard._id}`)
+                    i.fas.fa-pen.mr-2
+                    |  Sửa
+                .settings-sound-row
+                    button#sound-toggle.sound-toggle-btn(type="button" aria-pressed="true" title="Tắt âm thanh hiệu ứng")
+                        i.fas.fa-volume-high
+                        span Âm bật
+                    .sound-volume-control(title="Âm lượng hiệu ứng")
+                        i.fas.fa-volume-low
+                        input#sound-volume(type="range" min="0" max="100" step="1" value="85" aria-label="Âm lượng hiệu ứng")
+                        span#sound-volume-value 85%
 
         h1
             | Thẻ [#{flashCard.name}]

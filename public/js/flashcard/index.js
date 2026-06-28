@@ -8,6 +8,9 @@ const hideButton = document.getElementById("hide");
 const addContainer = document.getElementById("add-container");
 const shuffleButton = document.getElementById("random"); // Nút trộn thẻ
 const alertMessage = document.getElementById("alert");
+const settingsToggleButton = document.getElementById("settings-toggle");
+const settingsPanel = document.getElementById("settings-panel");
+const settingsCloseButton = document.getElementById("settings-close");
 const soundToggleButton = document.getElementById("sound-toggle");
 const soundVolumeInput = document.getElementById("sound-volume");
 const soundVolumeValue = document.getElementById("sound-volume-value");
@@ -301,6 +304,14 @@ function updateSoundVolumeControl() {
     if (soundVolumeValue) {
         soundVolumeValue.innerText = `${soundVolumePercent}%`;
     }
+}
+
+function setSettingsPanelOpen(isOpen) {
+    if (!settingsPanel || !settingsToggleButton) return;
+
+    settingsPanel.classList.toggle("show", isOpen);
+    settingsPanel.setAttribute("aria-hidden", isOpen ? "false" : "true");
+    settingsToggleButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
 }
 
 function updateDifficultButtonState(button, isDifficult) {
@@ -692,6 +703,19 @@ soundVolumeInput?.addEventListener("change", () => {
     }
 });
 
+settingsToggleButton?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    setSettingsPanelOpen(!settingsPanel?.classList.contains("show"));
+});
+
+settingsCloseButton?.addEventListener("click", () => setSettingsPanelOpen(false));
+
+settingsPanel?.addEventListener("click", (event) => {
+    event.stopPropagation();
+});
+
+document.addEventListener("click", () => setSettingsPanelOpen(false));
+
 imageModeButtons.forEach(button => {
     button.addEventListener("click", () => {
         imageDisplayMode = button.dataset.imageMode;
@@ -892,6 +916,11 @@ $(document).ready(function () {
 
 // Lắng nghe sự kiện phím từ bàn phím
 document.addEventListener('keydown', (e) => {
+    if (e.key === "Escape" && settingsPanel?.classList.contains("show")) {
+        setSettingsPanelOpen(false);
+        return;
+    }
+
     if (isRemovingKnownCard) return;
 
     switch (e.key) {
