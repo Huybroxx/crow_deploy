@@ -15,10 +15,10 @@
 <h2>Installation</h2>
 <ol>
     <li>Clone the repository:
-        <pre><code>git clone https://github.com/yourusername/language-learning-app.git</code></pre>
+        <pre><code>git clone https://github.com/HuyBrox/crow_deploy.git</code></pre>
     </li>
     <li>Navigate to the project directory:
-        <pre><code>cd language-learning-app</code></pre>
+        <pre><code>cd crow_deploy</code></pre>
     </li>
     <li>Install dependencies:
         <pre><code>npm install</code></pre>
@@ -57,9 +57,3 @@
 
 <h2>Contact</h2>
 <p>For any inquiries or feedback, please contact us at <a href="mailto:email@example.com">email@example.com</a>.</p>
-# deploy_crow
-# deploy_crow
-# deploycrow
-# deploycrow
-# deploycrow
-# deploycrow
